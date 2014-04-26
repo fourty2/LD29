@@ -129,14 +129,15 @@ Segment.prototype.setNextSegment = function(segment) {
 	this.nextSegment = segment;
 }
 Segment.prototype.fire = function() {
-	this.animations.play('firetrail', 30, false);
-}
-
-Segment.prototype.fireNextSegment = function() {
   if (this.hasEnemy) {
     this.hasEnemy.hit();
     this.hasEnemy = false;
   }
+	this.animations.play('firetrail', 30, false);
+}
+
+Segment.prototype.fireNextSegment = function() {
+
 
 	this.animations.play('full', 1, true);
 	if (this.nextSegment) {
@@ -292,7 +293,7 @@ Wire.prototype.create = function(sourceX, sourceY, destObj) {
 Wire.prototype.spawnEnemies = function() {
 	if (this.enemies) {
 		for (var countEnemies = 0; countEnemies< this.enemies.length; countEnemies++) {
-	  	var sgmt = this.game.rnd.integerInRange(0, this.segments.length-1);
+	  	var sgmt = this.game.rnd.integerInRange(1, this.segments.length-1);
 
 	  	this.enemies[countEnemies].x = this.segments[sgmt].x;
 	  	this.enemies[countEnemies].y = this.segments[sgmt].y;

@@ -22,14 +22,15 @@ Segment.prototype.setNextSegment = function(segment) {
 	this.nextSegment = segment;
 }
 Segment.prototype.fire = function() {
-	this.animations.play('firetrail', 30, false);
-}
-
-Segment.prototype.fireNextSegment = function() {
   if (this.hasEnemy) {
     this.hasEnemy.hit();
     this.hasEnemy = false;
   }
+	this.animations.play('firetrail', 30, false);
+}
+
+Segment.prototype.fireNextSegment = function() {
+
 
 	this.animations.play('full', 1, true);
 	if (this.nextSegment) {

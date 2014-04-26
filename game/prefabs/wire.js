@@ -57,7 +57,7 @@ Wire.prototype.create = function(sourceX, sourceY, destObj) {
 Wire.prototype.spawnEnemies = function() {
 	if (this.enemies) {
 		for (var countEnemies = 0; countEnemies< this.enemies.length; countEnemies++) {
-	  	var sgmt = this.game.rnd.integerInRange(0, this.segments.length-1);
+	  	var sgmt = this.game.rnd.integerInRange(1, this.segments.length-1);
 
 	  	this.enemies[countEnemies].x = this.segments[sgmt].x;
 	  	this.enemies[countEnemies].y = this.segments[sgmt].y;
