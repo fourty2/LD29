@@ -15,7 +15,106 @@ window.onload = function () {
 
   game.state.start('boot');
 };
-},{"./states/boot":2,"./states/gameover":3,"./states/menu":4,"./states/play":5,"./states/preload":6}],2:[function(require,module,exports){
+},{"./states/boot":4,"./states/gameover":5,"./states/menu":6,"./states/play":7,"./states/preload":8}],2:[function(require,module,exports){
+'use strict';
+
+var Segment = function(game, x, y, frame) {
+  Phaser.Sprite.call(this, game, x, y, 'wire', frame);
+  this.anchor.setTo(0, 0.5);
+  this.game.physics.arcade.enableBody(this);
+  this.body.allowGravity  = false;
+  this.body.immovable = true;
+
+
+  this.animations.add('fire', [1,2,3,4,5]);
+  var trailAnim = this.animations.add('firetrail', [1,7,8,9,10]);
+  this.animations.add('full', [6]);
+  trailAnim.onComplete.add(this.fireNextSegment, this);
+  this.animations.add('clean', [0]);
+
+};
+
+Segment.prototype = Object.create(Phaser.Sprite.prototype);
+Segment.prototype.constructor = Segment;
+Segment.prototype.setNextSegment = function(segment) {
+	this.nextSegment = segment;
+}
+Segment.prototype.fire = function() {
+	this.animations.play('firetrail', 30, false);
+}
+
+Segment.prototype.fireNextSegment = function() {
+	this.animations.play('full', 1, true);
+	if (this.nextSegment) {
+		this.nextSegment.fire();
+	}
+}
+
+Segment.prototype.update = function() {
+  
+  // write your prefab's specific update code here
+  
+};
+
+module.exports = Segment;
+
+},{}],3:[function(require,module,exports){
+'use strict';
+
+var Segment = require('../prefabs/segment');
+var Wire = function(game, parent, sourceX, sourceY, destX, destY) {
+    Phaser.Group.call(this, game, parent);
+    this.create(sourceX, sourceY, destX, destY);  
+};
+
+Wire.prototype = Object.create(Phaser.Group.prototype);
+Wire.prototype.constructor = Wire;
+Wire.prototype.create = function(sourceX, sourceY, destX, destY) {
+
+	  this.pSource = new Phaser.Point(sourceX, sourceY);
+	  this.pDest = new Phaser.Point(destX, destY);
+	  this.iDistance = Phaser.Point.distance(this.pSource, this.pDest);
+	  this.iAngle = this.game.physics.arcade.angleBetween(this.pSource, this.pDest);
+	  this.segments = Array();
+	  var pStart = this.pSource;
+	  var i =0 ;
+	  var lastSegment = null;
+	  while (this.iDistance > 20 && i < 40) {
+	  		i++;
+	  		this.iAngle = this.game.physics.arcade.angleBetween(pStart, this.pDest);
+	  		
+	  		var segment = new Segment(this.game, pStart.x, pStart.y);
+
+	  		if (lastSegment) {
+		  		lastSegment.setNextSegment(segment);
+	  		}
+			lastSegment = segment;
+	  		segment.angle = (this.iAngle * (180/Math.PI)) + this.game.rnd.integerInRange(-20,20);
+	  		// nächsten punkt ausrechnen
+	  		var rad = segment.angle * (Math.PI / 180);
+	  		pStart.x = Math.round(pStart.x + Math.cos(rad) * 32);
+	  		pStart.y = Math.round(pStart.y + Math.sin(rad) * 32);
+			this.iDistance = Phaser.Point.distance(pStart, this.pDest);
+
+			this.add(segment);
+			this.segments.push(segment);
+	  }
+
+};
+
+Wire.prototype.fire = function() {
+	this.segments[0].fire();
+}
+
+Wire.prototype.update = function() {
+  
+  // write your prefab's specific update code here
+  
+};
+
+module.exports = Wire;
+
+},{"../prefabs/segment":2}],4:[function(require,module,exports){
 
 'use strict';
 
@@ -34,7 +133,7 @@ Boot.prototype = {
 
 module.exports = Boot;
 
-},{}],3:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 
 'use strict';
 function GameOver() {}
@@ -62,7 +161,7 @@ GameOver.prototype = {
 };
 module.exports = GameOver;
 
-},{}],4:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 
 'use strict';
 function Menu() {}
@@ -94,78 +193,26 @@ Menu.prototype = {
 
 module.exports = Menu;
 
-},{}],5:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 
   'use strict';
+  var Wire = require('../prefabs/wire');
+
   function Play() {}
   Play.prototype = {
     wires: Array(),
-    firedSegment: 0,
     create: function() {
       this.game.physics.startSystem(Phaser.Physics.ARCADE);
+      var mywire = new Wire(this.game, null, 0, this.game.height, this.game.width, 0);
+      var mywire2 = new Wire(this.game,0, this.game.height/2, this.game.width, this.game.height/2);
+      this.game.add.existing(mywire);
+      this.game.add.existing(mywire2);
 
-
-      this.wire = this.game.add.sprite(0, this.game.height/2, 'wire');
-      //this.game.physics.arcade.enable(this.wire);
-
-      var lastX, lastY, lastAngle;
-      lastX = 0;
-      lastY = this.game.height/2;
-      lastAngle = 0;
-      for (var i=0; i<=20; i++) {
-          var rad = lastAngle * (Math.PI / 180);
-          var startY = Math.round(lastY + Math.sin(rad) * 32);
-          var startX = Math.round(lastX + Math.cos(rad) * 32);
-
-          console.log("lastX:" + lastX + " lastY: " + lastY + "lastAngle: " + lastAngle + " radiant: " + rad);
-          var wire = this.game.add.sprite(startX, startY, 'wire');
-          wire.animations.add('clean', [0]);
-          wire.animations.add('fire', [1,2,3,4,5]);
-          var trailAnim = wire.animations.add('firetrail', [1,7,8,9,10]);
-          wire.animations.add('full', [6]);
-          wire.anchor.setTo(0,0.5); //(x:0, y: center)
-          wire.angle = this.game.rnd.integerInRange(-20,20);
-          console.log("startX:" + startX + " startY: " + startY + "newAngle: " + wire.angle + " radiant: " + rad);
-
-          lastAngle = wire.angle;
-          lastX = Math.round(startX);
-          lastY = Math.round(startY);
-
-          trailAnim.onComplete.add(this.wireSegmentFull, this);
-          wire.play('clean', 1, true);
-          this.wires.push(wire);
-      }
-
-      this.wires[this.firedSegment].animations.play('firetrail', 60, false);
-
-
-      /*this.sprite = this.game.add.sprite(this.game.width/2, this.game.height/2, 'yeoman');
-      this.sprite.inputEnabled = true;
-      
-      this.game.physics.arcade.enable(this.sprite);
-      this.sprite.body.collideWorldBounds = true;
-      this.sprite.body.bounce.setTo(1,1);
-      this.sprite.body.velocity.x = this.game.rnd.integerInRange(-500,500);
-      this.sprite.body.velocity.y = this.game.rnd.integerInRange(-500,500);
-
-      this.sprite.events.onInputDown.add(this.clickListener, this);
-      */
-    },
-    wireSegmentFull: function(sprite, animation) {
-      sprite.animations.play('full', 1, true);
-      if (this.firedSegment<20) {
-        this.firedSegment++;
-         this.wires[this.firedSegment].animations.play('firetrail', 60, false);
-      }
+      mywire.fire();
+      mywire2.fire();
     },
 
     update: function() {
-
-    },
-    render: function() {
-     this.game.debug.spriteInfo(this.wires[1], 32, 32);
-    //  this.game.debug.text('deltaZ: ' + this.wires[17].body.deltaZ(), 32, 296);
-
 
     },
     clickListener: function() {
@@ -174,7 +221,7 @@ module.exports = Menu;
   };
   
   module.exports = Play;
-},{}],6:[function(require,module,exports){
+},{"../prefabs/wire":3}],8:[function(require,module,exports){
 
 'use strict';
 function Preload() {
