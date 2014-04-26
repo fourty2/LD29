@@ -21,7 +21,7 @@ Wire.prototype.create = function(sourceX, sourceY, destObj) {
 	  var pStart = this.pSource;
 	  var i =0 ;
 	  var lastSegment = null;
-	  while (this.iDistance > 20 && i < 40) {
+	  while (this.iDistance > 16 && i < 40) {
 	  		i++;
 	  		this.iAngle = this.game.physics.arcade.angleBetween(pStart, this.pDest);
 	  		
@@ -31,7 +31,12 @@ Wire.prototype.create = function(sourceX, sourceY, destObj) {
 		  		lastSegment.setNextSegment(segment);
 	  		}
 			lastSegment = segment;
-	  		segment.angle = (this.iAngle * (180/Math.PI)) + this.game.rnd.integerInRange(-20,20);
+			var variance = 0;
+			if (this.iDistance > 100) {
+				variance = this.game.rnd.integerInRange(-20,20)
+			}
+
+	  		segment.angle = (this.iAngle * (180/Math.PI)) + variance ;
 	  		// nächsten punkt ausrechnen
 	  		var rad = segment.angle * (Math.PI / 180);
 	  		pStart.x = Math.round(pStart.x + Math.cos(rad) * 32);

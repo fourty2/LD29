@@ -21,17 +21,12 @@ Switch.prototype.update = function() {
   
 };
 Switch.prototype.wireTo = function(state, obj) {
-
-	if (obj instanceof Phaser.Point) {
-		this.stateWires[state] = new Wire(this.game, null, this.x, this.y,
-                     obj);
-		this.game.add.existing(this.stateWires[state]);
-	}
-
+	this.stateWires[state] = new Wire(this.game, null, this.x, this.y,
+                    obj);
+	this.game.add.existing(this.stateWires[state]);
 };
 
 Switch.prototype.wireLanded = function() {
-	console.log("kam im switch an " + this.state);
 	this.stateWires[this.state].fire();
 }
 
