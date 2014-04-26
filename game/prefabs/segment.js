@@ -29,8 +29,17 @@ Segment.prototype.fireNextSegment = function() {
 	this.animations.play('full', 1, true);
 	if (this.nextSegment) {
 		this.nextSegment.fire();
+	} else if (this.fullCallback) {
+		this.fullCallback(this.callbackScope);
 	}
 }
+
+Segment.prototype.setFullCallback = function(callback, scope) {
+	this.fullCallback = callback;
+	this.callbackScope = scope;
+}
+
+
 
 Segment.prototype.update = function() {
   

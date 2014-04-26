@@ -15,7 +15,44 @@ window.onload = function () {
 
   game.state.start('boot');
 };
-},{"./states/boot":4,"./states/gameover":5,"./states/menu":6,"./states/play":7,"./states/preload":8}],2:[function(require,module,exports){
+},{"./states/boot":6,"./states/gameover":7,"./states/menu":8,"./states/play":9,"./states/preload":10}],2:[function(require,module,exports){
+'use strict';
+var Wire = require('../prefabs/wire');
+
+var Head = function(game, x, y, frame) {
+  Phaser.Sprite.call(this, game, x, y, 'start', frame);
+  this.anchor.setTo(0.5,0.5);
+  // initialize your prefab here
+   this.inputEnabled = true;
+   this.events.onInputDown.add(this.clickListener, this);
+  
+};
+
+Head.prototype = Object.create(Phaser.Sprite.prototype);
+Head.prototype.constructor = Head;
+
+Head.prototype.update = function() {
+  
+  // write your prefab's specific update code here
+  
+};
+
+Head.prototype.wireToSwitch = function(switchObject) {
+	this.switch = switchObject;
+	this.wire = new Wire(this.game, null, this.x, this.y, this.switch);
+
+	this.game.add.existing(this.wire);
+};
+
+Head.prototype.clickListener = function() {
+	if (this.wire) {
+		this.wire.fire();
+	}
+};
+
+module.exports = Head;
+
+},{"../prefabs/wire":5}],3:[function(require,module,exports){
 'use strict';
 
 var Segment = function(game, x, y, frame) {
@@ -47,8 +84,17 @@ Segment.prototype.fireNextSegment = function() {
 	this.animations.play('full', 1, true);
 	if (this.nextSegment) {
 		this.nextSegment.fire();
+	} else if (this.fullCallback) {
+		this.fullCallback(this.callbackScope);
 	}
 }
+
+Segment.prototype.setFullCallback = function(callback, scope) {
+	this.fullCallback = callback;
+	this.callbackScope = scope;
+}
+
+
 
 Segment.prototype.update = function() {
   
@@ -58,7 +104,52 @@ Segment.prototype.update = function() {
 
 module.exports = Segment;
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
+'use strict';
+var Wire = require('../prefabs/wire');
+var Switch = function(game, x, y, frame) {
+	Phaser.Sprite.call(this, game, x, y, 'switch', frame);
+	this.anchor.setTo(0.5,0.5);
+	this.inputEnabled = true;
+	this.state = 'A';
+	this.stateWires = Array();
+	this.animations.add('B', [1]);
+	this.animations.add('A', [0]);
+	this.events.onInputDown.add(this.toggleSwitch, this);
+
+};
+
+Switch.prototype = Object.create(Phaser.Sprite.prototype);
+Switch.prototype.constructor = Switch;
+
+Switch.prototype.update = function() {
+  
+  // write your prefab's specific update code here
+  
+};
+Switch.prototype.wireTo = function(state, obj) {
+
+	if (obj instanceof Phaser.Point) {
+		this.stateWires[state] = new Wire(this.game, null, this.x, this.y,
+                     obj);
+		this.game.add.existing(this.stateWires[state]);
+	}
+
+};
+
+Switch.prototype.wireLanded = function() {
+	console.log("kam im switch an " + this.state);
+	this.stateWires[this.state].fire();
+}
+
+Switch.prototype.toggleSwitch = function() {
+	this.state = this.state == 'A'?'B':'A';
+    this.animations.play(this.state, 1, true);
+}
+
+module.exports = Switch;
+
+},{"../prefabs/wire":5}],5:[function(require,module,exports){
 'use strict';
 
 var Segment = require('../prefabs/segment');
@@ -69,7 +160,10 @@ var Wire = function(game, parent, sourceX, sourceY, destX, destY) {
 
 Wire.prototype = Object.create(Phaser.Group.prototype);
 Wire.prototype.constructor = Wire;
-Wire.prototype.create = function(sourceX, sourceY, destX, destY) {
+Wire.prototype.create = function(sourceX, sourceY, destObj) {
+		var destX = destObj.x;
+		var destY = destObj.y;
+		this.destObj = destObj;
 
 	  this.pSource = new Phaser.Point(sourceX, sourceY);
 	  this.pDest = new Phaser.Point(destX, destY);
@@ -99,11 +193,16 @@ Wire.prototype.create = function(sourceX, sourceY, destX, destY) {
 			this.add(segment);
 			this.segments.push(segment);
 	  }
+	  segment.setFullCallback(this.handleFullWire, this);
 
 };
 
 Wire.prototype.fire = function() {
 	this.segments[0].fire();
+}
+
+Wire.prototype.handleFullWire = function(scope) {
+	scope.destObj.wireLanded();
 }
 
 Wire.prototype.update = function() {
@@ -114,7 +213,7 @@ Wire.prototype.update = function() {
 
 module.exports = Wire;
 
-},{"../prefabs/segment":2}],4:[function(require,module,exports){
+},{"../prefabs/segment":3}],6:[function(require,module,exports){
 
 'use strict';
 
@@ -133,7 +232,7 @@ Boot.prototype = {
 
 module.exports = Boot;
 
-},{}],5:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 
 'use strict';
 function GameOver() {}
@@ -161,7 +260,7 @@ GameOver.prototype = {
 };
 module.exports = GameOver;
 
-},{}],6:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 
 'use strict';
 function Menu() {}
@@ -193,35 +292,64 @@ Menu.prototype = {
 
 module.exports = Menu;
 
-},{}],7:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 
   'use strict';
-  var Wire = require('../prefabs/wire');
-
+  var Head = require('../prefabs/head');
+  var Switch = require('../prefabs/switch');
+  
   function Play() {}
   Play.prototype = {
     wires: Array(),
     create: function() {
       this.game.physics.startSystem(Phaser.Physics.ARCADE);
-      var mywire = new Wire(this.game, null, 0, this.game.height, this.game.width, 0);
-      var mywire2 = new Wire(this.game,0, this.game.height/2, this.game.width, this.game.height/2);
-      this.game.add.existing(mywire);
-      this.game.add.existing(mywire2);
+//      var mywire = new Wire(this.game, null, 0, this.game.height, this.game.width, 0);
+//      var mywire2 = new Wire(this.game,null, 0, this.game.height/2, this.game.width, this.game.height/2);
+//      this.game.add.existing(mywire);
+//      this.game.add.existing(mywire2);
 
-      mywire.fire();
-      mywire2.fire();
+
+
+      this.head = new Head(this.game, 16, this.game.height/2);
+      this.switch = new Switch(this.game, this.game.width/2, this.game.height/2);
+
+      this.switch.wireTo('A', new Phaser.Point(
+          (this.game.width/4 * 3), (this.game.height/4) * 1));
+
+      this.switch.wireTo('B', new Phaser.Point(
+          (this.game.width/4 * 3), (this.game.height/4) * 3));
+
+
+
+      this.head.wireToSwitch(this.switch);
+      this.game.add.existing(this.head);
+      this.game.add.existing(this.switch);
+
+
+//      this.headWire = new Wire(this.game,null, 0, this.game.height/2,
+  //                    this.game.width/2, this.game.height/2 );
+    //  this.game.add.existing(this.headWire);
+
+
+
+
+      
+
+
+
+      this.destination = this.game.add.sprite(this.game.width-16, this.game.height/2, 'start');
+      this.destination.anchor.setTo(0.5,0.5);
+      this.destination.angle = 180;
+
     },
 
     update: function() {
 
-    },
-    clickListener: function() {
-      this.game.state.start('gameover');
     }
   };
   
   module.exports = Play;
-},{"../prefabs/wire":3}],8:[function(require,module,exports){
+},{"../prefabs/head":2,"../prefabs/switch":4}],10:[function(require,module,exports){
 
 'use strict';
 function Preload() {
@@ -238,6 +366,8 @@ Preload.prototype = {
     this.load.setPreloadSprite(this.asset);
 
     this.load.spritesheet('wire', 'assets/wire.png', 32, 32);
+    this.load.spritesheet('start', 'assets/start.png', 32, 32);
+    this.load.spritesheet('switch', 'assets/switch.png', 32, 32);
 
   },
   create: function() {

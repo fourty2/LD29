@@ -14,6 +14,8 @@ Preload.prototype = {
     this.load.setPreloadSprite(this.asset);
 
     this.load.spritesheet('wire', 'assets/wire.png', 32, 32);
+    this.load.spritesheet('start', 'assets/start.png', 32, 32);
+    this.load.spritesheet('switch', 'assets/switch.png', 32, 32);
 
   },
   create: function() {

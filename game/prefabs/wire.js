@@ -8,7 +8,10 @@ var Wire = function(game, parent, sourceX, sourceY, destX, destY) {
 
 Wire.prototype = Object.create(Phaser.Group.prototype);
 Wire.prototype.constructor = Wire;
-Wire.prototype.create = function(sourceX, sourceY, destX, destY) {
+Wire.prototype.create = function(sourceX, sourceY, destObj) {
+		var destX = destObj.x;
+		var destY = destObj.y;
+		this.destObj = destObj;
 
 	  this.pSource = new Phaser.Point(sourceX, sourceY);
 	  this.pDest = new Phaser.Point(destX, destY);
@@ -38,11 +41,16 @@ Wire.prototype.create = function(sourceX, sourceY, destX, destY) {
 			this.add(segment);
 			this.segments.push(segment);
 	  }
+	  segment.setFullCallback(this.handleFullWire, this);
 
 };
 
 Wire.prototype.fire = function() {
 	this.segments[0].fire();
+}
+
+Wire.prototype.handleFullWire = function(scope) {
+	scope.destObj.wireLanded();
 }
 
 Wire.prototype.update = function() {
