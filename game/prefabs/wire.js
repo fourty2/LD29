@@ -48,6 +48,7 @@ Wire.prototype.create = function(sourceX, sourceY, destObj) {
 			this.add(segment);
 			this.segments.push(segment);
 	  }
+	  destObj.setInputSegment(segment);
 	  segment.setFullCallback(this.handleFullWire, this);
 
 	  

@@ -25,5 +25,8 @@ Waypoint.prototype.wireLanded = function() {
   // write your prefab's specific update code here
   
 };
+Waypoint.prototype.setInputSegment = function(segment) {
+	
+}
 
 module.exports = Waypoint;

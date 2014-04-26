@@ -12,6 +12,7 @@
 
     create: function() {
       this.targetFears = 2;
+      this.game.stage.backgroundColor = '#342d36';
       this.game.physics.startSystem(Phaser.Physics.ARCADE);
        var style = { font: '24px Arial', fill: '#ffffff', align: 'center'};
       this.titleText = this.game.add.text(0, 0, 'Fears to kill: ' + this.targetFears, style);

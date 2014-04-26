@@ -44,6 +44,10 @@ Destination.prototype.update = function() {
   
 };
 
+Destination.prototype.setInputSegment = function(segment) {
+	
+}
+
 module.exports = Destination;
 
 },{}],3:[function(require,module,exports){
@@ -176,9 +180,16 @@ var Switch = function(game, x, y, frame) {
 	this.inputEnabled = true;
 	this.state = 'A';
 	this.stateWires = Array();
-	this.animations.add('B', [1]);
+	this.animations.add('B', [0]);
 	this.animations.add('A', [0]);
 	this.events.onInputDown.add(this.toggleSwitch, this);
+
+	this.backgroundsprite = this.game.add.sprite(x,y,'rand');
+	this.backgroundsprite.anchor.setTo(0.5,0.5);
+	this.backgroundsprite.angle = this.game.rnd.integerInRange(0,180);
+
+	this.indicator = this.game.add.sprite(x,y, 'switchindicator');
+	this.indicator.anchor.setTo(0.5,0.5);
 
 };
 
@@ -193,6 +204,14 @@ Switch.prototype.update = function() {
 Switch.prototype.wireTo = function(state, obj, enemies) {
 	this.stateWires[state] = new Wire(this.game, null, this.x, this.y,
                     obj, enemies);
+	if (state == 'A') {
+		var segment = this.stateWires[state].segments[0];
+		
+		var rad = segment.angle * (Math.PI / 180);
+	  	this.indicator.x = Math.round(this.x + Math.cos(rad) * 32);
+	  	this.indicator.y = Math.round(this.y + Math.sin(rad) * 32);
+		//this.indicator.x+=30;
+	}
 	this.game.add.existing(this.stateWires[state]);
 };
 
@@ -202,7 +221,28 @@ Switch.prototype.wireLanded = function() {
 
 Switch.prototype.toggleSwitch = function() {
 	this.state = this.state == 'A'?'B':'A';
+	var segment = this.stateWires[this.state].segments[0];
+	
+	var rad = segment.angle * (Math.PI / 180);
+	
+	 var nextX  = Math.round(this.x + Math.cos(rad) * 32);
+	 var nextY = Math.round(this.y + Math.sin(rad) * 32);
+	this.game.add.tween(this.indicator).to({x: nextX, y:nextY}, 500, Phaser.Easing.Circular.Out, true);
+
+
     this.animations.play(this.state, 1, true);
+}
+Switch.prototype.setInputSegment = function(segment) {
+	
+	this.inputindicator = this.game.add.sprite(0,0,'switchinput');
+	this.inputindicator.anchor.setTo(0.5,0.5);
+	var rad = segment.angle * (Math.PI / 180);
+	  	this.inputindicator.x = Math.round(this.x - Math.cos(rad) * 32);
+	  	this.inputindicator.y = Math.round(this.y - Math.sin(rad) * 32);
+	  	console.log(this.inputindicator.z);
+	  	this.inputindicator.z = -1;
+	  	console.log(this.z);
+	  this.inputindicator.bringToTop();
 }
 
 module.exports = Switch;
@@ -235,6 +275,9 @@ Waypoint.prototype.wireLanded = function() {
   // write your prefab's specific update code here
   
 };
+Waypoint.prototype.setInputSegment = function(segment) {
+	
+}
 
 module.exports = Waypoint;
 
@@ -289,6 +332,7 @@ Wire.prototype.create = function(sourceX, sourceY, destObj) {
 			this.add(segment);
 			this.segments.push(segment);
 	  }
+	  destObj.setInputSegment(segment);
 	  segment.setFullCallback(this.handleFullWire, this);
 
 	  
@@ -395,6 +439,7 @@ Menu.prototype = {
     this.instructionsText = this.game.add.text(this.game.world.centerX, 400, 'Click anywhere to play', { font: '16px Arial', fill: '#ffffff', align: 'center'});
     this.instructionsText.anchor.setTo(0.5, 0.5);
 
+
 /*    this.sprite.angle = -20;
     this.game.add.tween(this.sprite).to({angle: 20}, 1000, Phaser.Easing.Linear.NONE, true, 0, 1000, true);
     */
@@ -423,6 +468,7 @@ module.exports = Menu;
 
     create: function() {
       this.targetFears = 2;
+      this.game.stage.backgroundColor = '#342d36';
       this.game.physics.startSystem(Phaser.Physics.ARCADE);
        var style = { font: '24px Arial', fill: '#ffffff', align: 'center'};
       this.titleText = this.game.add.text(0, 0, 'Fears to kill: ' + this.targetFears, style);
@@ -594,7 +640,12 @@ Preload.prototype = {
 
     this.load.spritesheet('wire', 'assets/wire.png', 32, 32);
     this.load.spritesheet('start', 'assets/start.png', 32, 32);
-    this.load.spritesheet('switch', 'assets/switch.png', 32, 32);
+    this.load.spritesheet('rand', 'assets/rand.png', 153, 153);
+
+    this.load.spritesheet('switch', 'assets/switch.png', 85, 86);
+    this.load.spritesheet('switchindicator', 'assets/switchindicator.png', 34, 35);
+    this.load.spritesheet('switchinput', 'assets/switchinput.png', 10, 31);
+
     this.load.spritesheet('flower', 'assets/flower.png', 32, 32);
   },
   create: function() {

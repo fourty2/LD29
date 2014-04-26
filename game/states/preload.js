@@ -15,7 +15,12 @@ Preload.prototype = {
 
     this.load.spritesheet('wire', 'assets/wire.png', 32, 32);
     this.load.spritesheet('start', 'assets/start.png', 32, 32);
-    this.load.spritesheet('switch', 'assets/switch.png', 32, 32);
+    this.load.spritesheet('rand', 'assets/rand.png', 153, 153);
+
+    this.load.spritesheet('switch', 'assets/switch.png', 85, 86);
+    this.load.spritesheet('switchindicator', 'assets/switchindicator.png', 34, 35);
+    this.load.spritesheet('switchinput', 'assets/switchinput.png', 10, 31);
+
     this.load.spritesheet('flower', 'assets/flower.png', 32, 32);
   },
   create: function() {

@@ -25,4 +25,8 @@ Destination.prototype.update = function() {
   
 };
 
+Destination.prototype.setInputSegment = function(segment) {
+	
+}
+
 module.exports = Destination;
