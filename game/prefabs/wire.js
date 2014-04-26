@@ -1,9 +1,11 @@
 'use strict';
 
 var Segment = require('../prefabs/segment');
-var Wire = function(game, parent, sourceX, sourceY, destX, destY) {
+var Wire = function(game, parent, sourceX, sourceY, destObj, enemies) {
     Phaser.Group.call(this, game, parent);
-    this.create(sourceX, sourceY, destX, destY);  
+    this.enemies = enemies;
+    this.create(sourceX, sourceY, destObj);
+    this.spawnEnemies(); 
 };
 
 Wire.prototype = Object.create(Phaser.Group.prototype);
@@ -48,7 +50,24 @@ Wire.prototype.create = function(sourceX, sourceY, destObj) {
 	  }
 	  segment.setFullCallback(this.handleFullWire, this);
 
+	  
+
+
 };
+Wire.prototype.spawnEnemies = function() {
+	if (this.enemies) {
+		for (var countEnemies = 0; countEnemies< this.enemies.length; countEnemies++) {
+	  	var sgmt = this.game.rnd.integerInRange(0, this.segments.length-1);
+
+	  	this.enemies[countEnemies].x = this.segments[sgmt].x;
+	  	this.enemies[countEnemies].y = this.segments[sgmt].y;
+	  	this.segments[sgmt].hasEnemy = this.enemies[countEnemies];
+	  	this.add(this.enemies[countEnemies]);
+
+	  }
+	}
+}
+
 
 Wire.prototype.fire = function() {
 	this.segments[0].fire();

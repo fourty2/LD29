@@ -20,9 +20,9 @@ Switch.prototype.update = function() {
   // write your prefab's specific update code here
   
 };
-Switch.prototype.wireTo = function(state, obj) {
+Switch.prototype.wireTo = function(state, obj, enemies) {
 	this.stateWires[state] = new Wire(this.game, null, this.x, this.y,
-                    obj);
+                    obj, enemies);
 	this.game.add.existing(this.stateWires[state]);
 };
 

@@ -16,7 +16,7 @@ Preload.prototype = {
     this.load.spritesheet('wire', 'assets/wire.png', 32, 32);
     this.load.spritesheet('start', 'assets/start.png', 32, 32);
     this.load.spritesheet('switch', 'assets/switch.png', 32, 32);
-
+    this.load.spritesheet('flower', 'assets/flower.png', 32, 32);
   },
   create: function() {
     this.asset.cropEnabled = false;

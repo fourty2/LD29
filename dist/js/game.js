@@ -15,7 +15,7 @@ window.onload = function () {
 
   game.state.start('boot');
 };
-},{"./states/boot":8,"./states/gameover":9,"./states/menu":10,"./states/play":11,"./states/preload":12}],2:[function(require,module,exports){
+},{"./states/boot":9,"./states/gameover":10,"./states/menu":11,"./states/play":12,"./states/preload":13}],2:[function(require,module,exports){
 'use strict';
 
 var Destination = function(game, x, y, frame) {
@@ -43,6 +43,32 @@ module.exports = Destination;
 
 },{}],3:[function(require,module,exports){
 'use strict';
+
+var Enemy = function(game, x, y, frame) {
+  Phaser.Sprite.call(this, game, 0, 0, 'flower', frame);
+  this.anchor.setTo(0.5,0.5);
+  this.bringToTop();
+  // initialize your prefab here
+  
+};
+
+Enemy.prototype = Object.create(Phaser.Sprite.prototype);
+Enemy.prototype.constructor = Enemy;
+
+Enemy.prototype.update = function() {
+  
+  // write your prefab's specific update code here
+  
+};
+
+Enemy.prototype.hit = function() {
+	this.destroy();
+}
+
+module.exports = Enemy;
+
+},{}],4:[function(require,module,exports){
+'use strict';
 var Wire = require('../prefabs/wire');
 
 var Head = function(game, x, y, frame) {
@@ -63,9 +89,9 @@ Head.prototype.update = function() {
   
 };
 
-Head.prototype.wireToSwitch = function(switchObject) {
+Head.prototype.wireToSwitch = function(switchObject, enemies) {
 	this.switch = switchObject;
-	this.wire = new Wire(this.game, null, this.x, this.y, this.switch);
+	this.wire = new Wire(this.game, null, this.x, this.y, this.switch, enemies);
 
 	this.game.add.existing(this.wire);
 };
@@ -78,7 +104,7 @@ Head.prototype.clickListener = function() {
 
 module.exports = Head;
 
-},{"../prefabs/wire":7}],4:[function(require,module,exports){
+},{"../prefabs/wire":8}],5:[function(require,module,exports){
 'use strict';
 
 var Segment = function(game, x, y, frame) {
@@ -107,6 +133,11 @@ Segment.prototype.fire = function() {
 }
 
 Segment.prototype.fireNextSegment = function() {
+  if (this.hasEnemy) {
+    this.hasEnemy.hit();
+    this.hasEnemy = false;
+  }
+
 	this.animations.play('full', 1, true);
 	if (this.nextSegment) {
 		this.nextSegment.fire();
@@ -130,7 +161,7 @@ Segment.prototype.update = function() {
 
 module.exports = Segment;
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 'use strict';
 var Wire = require('../prefabs/wire');
 var Switch = function(game, x, y, frame) {
@@ -153,9 +184,9 @@ Switch.prototype.update = function() {
   // write your prefab's specific update code here
   
 };
-Switch.prototype.wireTo = function(state, obj) {
+Switch.prototype.wireTo = function(state, obj, enemies) {
 	this.stateWires[state] = new Wire(this.game, null, this.x, this.y,
-                    obj);
+                    obj, enemies);
 	this.game.add.existing(this.stateWires[state]);
 };
 
@@ -170,7 +201,7 @@ Switch.prototype.toggleSwitch = function() {
 
 module.exports = Switch;
 
-},{"../prefabs/wire":7}],6:[function(require,module,exports){
+},{"../prefabs/wire":8}],7:[function(require,module,exports){
 'use strict';
 var Wire = require('../prefabs/wire');
 var Waypoint = function(game, x, y) {
@@ -201,13 +232,15 @@ Waypoint.prototype.wireLanded = function() {
 
 module.exports = Waypoint;
 
-},{"../prefabs/wire":7}],7:[function(require,module,exports){
+},{"../prefabs/wire":8}],8:[function(require,module,exports){
 'use strict';
 
 var Segment = require('../prefabs/segment');
-var Wire = function(game, parent, sourceX, sourceY, destX, destY) {
+var Wire = function(game, parent, sourceX, sourceY, destObj, enemies) {
     Phaser.Group.call(this, game, parent);
-    this.create(sourceX, sourceY, destX, destY);  
+    this.enemies = enemies;
+    this.create(sourceX, sourceY, destObj);
+    this.spawnEnemies(); 
 };
 
 Wire.prototype = Object.create(Phaser.Group.prototype);
@@ -252,7 +285,24 @@ Wire.prototype.create = function(sourceX, sourceY, destObj) {
 	  }
 	  segment.setFullCallback(this.handleFullWire, this);
 
+	  
+
+
 };
+Wire.prototype.spawnEnemies = function() {
+	if (this.enemies) {
+		for (var countEnemies = 0; countEnemies< this.enemies.length; countEnemies++) {
+	  	var sgmt = this.game.rnd.integerInRange(0, this.segments.length-1);
+
+	  	this.enemies[countEnemies].x = this.segments[sgmt].x;
+	  	this.enemies[countEnemies].y = this.segments[sgmt].y;
+	  	this.segments[sgmt].hasEnemy = this.enemies[countEnemies];
+	  	this.add(this.enemies[countEnemies]);
+
+	  }
+	}
+}
+
 
 Wire.prototype.fire = function() {
 	this.segments[0].fire();
@@ -270,7 +320,7 @@ Wire.prototype.update = function() {
 
 module.exports = Wire;
 
-},{"../prefabs/segment":4}],8:[function(require,module,exports){
+},{"../prefabs/segment":5}],9:[function(require,module,exports){
 
 'use strict';
 
@@ -289,7 +339,7 @@ Boot.prototype = {
 
 module.exports = Boot;
 
-},{}],9:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 
 'use strict';
 function GameOver() {}
@@ -317,7 +367,7 @@ GameOver.prototype = {
 };
 module.exports = GameOver;
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 
 'use strict';
 function Menu() {}
@@ -349,24 +399,30 @@ Menu.prototype = {
 
 module.exports = Menu;
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 
   'use strict';
   var Head = require('../prefabs/head');
   var Switch = require('../prefabs/switch');
  var WayPoint = require('../prefabs/waypoint');
  var Destination = require('../prefabs/destination');
+ var Enemy = require('../prefabs/enemy');
+ 
   
   function Play() {}
   Play.prototype = {
     wires: Array(),
     create: function() {
+      this.targetFears = 2;
       this.game.physics.startSystem(Phaser.Physics.ARCADE);
-//      var mywire = new Wire(this.game, null, 0, this.game.height, this.game.width, 0);
-//      var mywire2 = new Wire(this.game,null, 0, this.game.height/2, this.game.width, this.game.height/2);
-//      this.game.add.existing(mywire);
-//      this.game.add.existing(mywire2);
+       var style = { font: '24px Arial', fill: '#ffffff', align: 'center'};
+      this.titleText = this.game.add.text(0, 0, 'Fears to kill: ' + this.targetFears, style);
+     // this.titleText.anchor.setTo(0.5, 0.5);
 
+      this.enemies = [
+          new Enemy(this.game),
+          new Enemy(this.game)
+        ];
 
 
       this.head = new Head(this.game, 16, this.game.height/2);
@@ -383,12 +439,11 @@ module.exports = Menu;
       wp2.wireTo(this.destination);
 
 
-      this.switch.wireTo('A', wp1);
+      this.switch.wireTo('A', wp1, 0);
 
-      this.switch.wireTo('B', wp2);
+      this.switch.wireTo('B', wp2, [this.enemies[1]]);
 
-
-      this.head.wireToSwitch(this.switch);
+      this.head.wireToSwitch(this.switch, [this.enemies[0]]);
       this.game.add.existing(this.head);
       this.game.add.existing(this.switch);
       this.game.add.existing(this.destination);
@@ -397,12 +452,16 @@ module.exports = Menu;
     },
 
     update: function() {
-
+        var x = this.targetFears;
+        this.enemies.forEach(function(enemy) {
+            if (!enemy.exists) { x-=1;}
+             this.titleText.setText("Fears to kill: " + x);
+         }, this);
     }
   };
   
   module.exports = Play;
-},{"../prefabs/destination":2,"../prefabs/head":3,"../prefabs/switch":5,"../prefabs/waypoint":6}],12:[function(require,module,exports){
+},{"../prefabs/destination":2,"../prefabs/enemy":3,"../prefabs/head":4,"../prefabs/switch":6,"../prefabs/waypoint":7}],13:[function(require,module,exports){
 
 'use strict';
 function Preload() {
@@ -421,7 +480,7 @@ Preload.prototype = {
     this.load.spritesheet('wire', 'assets/wire.png', 32, 32);
     this.load.spritesheet('start', 'assets/start.png', 32, 32);
     this.load.spritesheet('switch', 'assets/switch.png', 32, 32);
-
+    this.load.spritesheet('flower', 'assets/flower.png', 32, 32);
   },
   create: function() {
     this.asset.cropEnabled = false;

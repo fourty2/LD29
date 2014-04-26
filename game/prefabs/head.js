@@ -19,9 +19,9 @@ Head.prototype.update = function() {
   
 };
 
-Head.prototype.wireToSwitch = function(switchObject) {
+Head.prototype.wireToSwitch = function(switchObject, enemies) {
 	this.switch = switchObject;
-	this.wire = new Wire(this.game, null, this.x, this.y, this.switch);
+	this.wire = new Wire(this.game, null, this.x, this.y, this.switch, enemies);
 
 	this.game.add.existing(this.wire);
 };

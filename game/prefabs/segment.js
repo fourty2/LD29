@@ -26,6 +26,11 @@ Segment.prototype.fire = function() {
 }
 
 Segment.prototype.fireNextSegment = function() {
+  if (this.hasEnemy) {
+    this.hasEnemy.hit();
+    this.hasEnemy = false;
+  }
+
 	this.animations.play('full', 1, true);
 	if (this.nextSegment) {
 		this.nextSegment.fire();
