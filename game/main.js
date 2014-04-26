@@ -9,6 +9,7 @@ window.onload = function () {
   game.state.add('gameover', require('./states/gameover'));
   game.state.add('menu', require('./states/menu'));
   game.state.add('play', require('./states/play'));
+  game.state.add('play2', require('./states/play2'));
   game.state.add('preload', require('./states/preload'));
   
 

@@ -9,13 +9,14 @@
   
   function Play() {}
   Play.prototype = {
-    wires: Array(),
+
     create: function() {
       this.targetFears = 2;
       this.game.physics.startSystem(Phaser.Physics.ARCADE);
        var style = { font: '24px Arial', fill: '#ffffff', align: 'center'};
       this.titleText = this.game.add.text(0, 0, 'Fears to kill: ' + this.targetFears, style);
      // this.titleText.anchor.setTo(0.5, 0.5);
+
 
       this.enemies = [
           new Enemy(this.game),
@@ -48,13 +49,20 @@
 
 
     },
-
     update: function() {
+ 
+
         var x = this.targetFears;
         this.enemies.forEach(function(enemy) {
             if (!enemy.exists) { x-=1;}
              this.titleText.setText("Fears to kill: " + x);
          }, this);
+
+        if (this.destination.landed && x == 0) {
+           this.game.state.start('play2');
+        } else if (this.destination.landed) {
+           this.game.state.start('play');
+        }
     }
   };
   

@@ -4,6 +4,7 @@ var Destination = function(game, x, y, frame) {
   Phaser.Sprite.call(this, game, x, y, 'start', frame);
  this.anchor.setTo(0.5,0.5);
  this.angle = 180;
+ this.landed = false;
   // initialize your prefab here
   
 };
@@ -11,8 +12,11 @@ var Destination = function(game, x, y, frame) {
 Destination.prototype = Object.create(Phaser.Sprite.prototype);
 Destination.prototype.constructor = Destination;
 Destination.prototype.wireLanded = function() {
-this.game.state.start('play');
-	console.log("yeah yeah");
+
+	this.landed = true;
+
+	//this.game.state.start('play');
+	//console.log("yeah yeah");
 }
 
 Destination.prototype.update = function() {
