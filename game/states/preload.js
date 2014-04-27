@@ -15,8 +15,12 @@ Preload.prototype = {
 
     this.load.image('background', 'assets/background.png');
         this.load.image('backgroundlight', 'assets/backgroundlight.png');
-        this.load.image('selbrain', 'assets/selbrain.png');
+        this.load.image('selbrain', 'assets/savethebrain.png');
         this.load.image('selinstr', 'assets/selinstr.png');
+        this.load.image('selback', 'assets/backtomenu.png');
+
+
+
     this.load.image('title', 'assets/title.png');
     this.load.image('mastersynapse', 'assets/mastersynapse.png');
     this.load.image('switchsynapse', 'assets/switchsynapse.png');
@@ -29,6 +33,7 @@ Preload.prototype = {
 
     this.load.spritesheet('explosion', 'assets/explosion.png',40,40);
 
+    this.load.image('audioswitch', 'assets/audio.png');
 
     this.load.audio('explosionSound', 'assets/expl.mp3');
     this.load.audio('switchSound', 'assets/switch.mp3');

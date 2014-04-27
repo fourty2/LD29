@@ -18,8 +18,8 @@
       this.background.scale.y = 2;
     this.targetFears = 3;
       this.game.physics.startSystem(Phaser.Physics.ARCADE);
-       var style = { font: '14px Arial', fill: '#ffffff', align: 'center'};
-      this.titleText = this.game.add.text(0, 0, 'Fears to kill: ' + this.targetFears, style);
+       var style = { font: '20px Arial', fill: '#ffffff', align: 'center'};
+      this.titleText = this.game.add.text(0, 0, 'Level 2 - Fears to kill: ' + this.targetFears, style);
      // this.titleText.anchor.setTo(0.5, 0.5);
 
 
@@ -84,6 +84,10 @@
       switch5.wireTo('B', switch2, [this.enemies[2]])
       this.head.wireToSwitch(switch1, [this.enemies[0]]);
 
+
+    this.backButton = this.game.add.button(this.game.width - 80, 25, 'selback', this.goBack, this);
+    this.backButton.anchor.setTo(0.5,0.5);
+
  /*     this.game.add.existing(this.head);
       this.game.add.existing(switch1);
       this.game.add.existing(switch2);
@@ -96,12 +100,20 @@
          var x = this.targetFears;
         this.enemies.forEach(function(enemy) {
             if (!enemy.exists) { x-=1;}
-             this.titleText.setText("Fears to kill: " + x + " (hint: switch while pulsating)");
+             this.titleText.setText("Level 2 - Fears to kill: " + x + " ");
          }, this);
 
-         if (this.destination.landed) {
+        if (this.destination.landed && x == 0) {
+           this.game.state.start('play3');
+        } else if (this.destination.landed) {
            this.game.state.start('play2');
         }
+           
+    },
+    goBack: function() {
+      this.game.state.states.menu.music.stop();
+      this.game.state.start('menu');
+
     },
     paused: function() {
       // This method will be called when game paused.

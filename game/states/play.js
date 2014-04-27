@@ -18,8 +18,8 @@
       this.background.scale.x = 2;
       this.background.scale.y = 2;
       this.game.physics.startSystem(Phaser.Physics.ARCADE);
-       var style = { font: '12px Arial', fill: '#333333', align: 'center'};
-      this.titleText = this.game.add.text(0, 0, 'Fears to kill: ' + this.targetFears, style);
+       var style = { font: '20px Arial', fill: '#ffffff', align: 'center'};
+      this.titleText = this.game.add.text(0, 0, 'Level 1 - Fears to kill: ' + this.targetFears, style);
      // this.titleText.anchor.setTo(0.5, 0.5);
 
 
@@ -55,12 +55,24 @@
       this.switch.wireTo('B', this.destination, [this.enemies[1]], wp2);
 
       this.head.wireToSwitch(this.switch, [this.enemies[0]]);
+
+
+
+this.backButton = this.game.add.button(this.game.width - 80, 25, 'selback', this.goBack, this);
+    this.backButton.anchor.setTo(0.5,0.5);
+
+
   //    this.game.add.existing(this.head);
     //  this.game.add.existing(this.switch);
      // this.game.add.existing(this.destination);
 
        
-     
+
+    },
+    goBack: function() {
+      this.game.state.states.menu.music.stop();
+      this.game.state.start('menu');
+
     },
     update: function() {
  
@@ -68,7 +80,7 @@
         var x = this.targetFears;
         this.enemies.forEach(function(enemy) {
             if (!enemy.exists) { x-=1;}
-             this.titleText.setText("Fears to kill: " + x);
+             this.titleText.setText("Level 1 - Fears left: " + x);
          }, this);
 
         if (this.destination.landed && x == 0) {

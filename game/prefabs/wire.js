@@ -49,7 +49,7 @@ Wire.prototype.create = function(sourceX, sourceY, destObj) {
 	  	}
 
 
-	  while (this.iDistance > 5 && i < 100) {
+	  while (this.iDistance > 5 && i < 120) {
 	  		i++;
 
 	  		if (this.pWaypoint && Phaser.Point.distance(pStart, this.pWaypoint) > 50) {

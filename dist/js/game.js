@@ -11,12 +11,13 @@ window.onload = function () {
   game.state.add('menu', require('./states/menu'));
   game.state.add('play', require('./states/play'));
   game.state.add('play2', require('./states/play2'));
+  game.state.add('play3', require('./states/play3'));
   game.state.add('preload', require('./states/preload'));
   
 
   game.state.start('boot');
 };
-},{"./states/boot":10,"./states/gameover":11,"./states/menu":12,"./states/play":13,"./states/play2":14,"./states/preload":15}],2:[function(require,module,exports){
+},{"./states/boot":10,"./states/gameover":11,"./states/menu":12,"./states/play":13,"./states/play2":14,"./states/play3":15,"./states/preload":16}],2:[function(require,module,exports){
 'use strict';
 
 var Destination = function(game, parent) {
@@ -510,7 +511,7 @@ Wire.prototype.create = function(sourceX, sourceY, destObj) {
 	  	}
 
 
-	  while (this.iDistance > 5 && i < 100) {
+	  while (this.iDistance > 5 && i < 120) {
 	  		i++;
 
 	  		if (this.pWaypoint && Phaser.Point.distance(pStart, this.pWaypoint) > 50) {
@@ -808,10 +809,10 @@ Menu.prototype = {
 
 
     this.instructionGroup.add(
-    this.game.add.text(170,420,'* toggle switches (should show the direction later)', { font: '16px Arial', fill: '#333333', align: 'center'})
+    this.game.add.text(170,420,'* toggle switches', { font: '16px Arial', fill: '#333333', align: 'center'})
     );
     this.instructionGroup.add(
-    this.game.add.text(170,440,'* kill all flowers', { font: '16px Arial', fill: '#333333', align: 'center'})
+    this.game.add.text(170,440,'* kill all spiders/ fears', { font: '16px Arial', fill: '#333333', align: 'center'})
     );
     this.instructionGroup.add(
     this.game.add.text(170,460,'* (lvl2) you can toggle the switch while the impulse is traveling', { font: '16px Arial', fill: '#333333', align: 'center'})
@@ -822,10 +823,22 @@ Menu.prototype = {
 
     this.instructionGroup.visible = false;
     this.game.add.tween(this.title).to({y:130}, 2000, Phaser.Easing.Bounce.Out, true);
-    this.game.add.audio('music').play('', 0, 0.2, true);
+
+    this.audioSwitch = this.game.add.button(this.game.width - 80, 10, 'audioswitch', this.switchAudio, this);
+
+    this.music = this.game.add.audio('music');
+    this.music.play('', 0, 0.2, true);
 /*    this.sprite.angle = -20;
     this.game.add.tween(this.sprite).to({angle: 20}, 1000, Phaser.Easing.Linear.NONE, true, 0, 1000, true);
     */
+  },
+  switchAudio: function() {
+    if (this.music.isPlaying) {
+      this.music.pause();
+    } else {
+      this.music.resume();
+    }
+
   },
   startGame: function() {
     this.game.state.start('play');
@@ -839,7 +852,11 @@ Menu.prototype = {
   //  if(this.game.input.activePointer.justPressed()) {
     //  this.game.state.start('play');
    // }
-  }
+  },
+   shutdown: function() {
+  //    this.music.pause();
+    //  this.music.destroy();
+    }
 };
 
 module.exports = Menu;
@@ -865,8 +882,8 @@ module.exports = Menu;
       this.background.scale.x = 2;
       this.background.scale.y = 2;
       this.game.physics.startSystem(Phaser.Physics.ARCADE);
-       var style = { font: '12px Arial', fill: '#333333', align: 'center'};
-      this.titleText = this.game.add.text(0, 0, 'Fears to kill: ' + this.targetFears, style);
+       var style = { font: '20px Arial', fill: '#ffffff', align: 'center'};
+      this.titleText = this.game.add.text(0, 0, 'Level 1 - Fears to kill: ' + this.targetFears, style);
      // this.titleText.anchor.setTo(0.5, 0.5);
 
 
@@ -902,12 +919,24 @@ module.exports = Menu;
       this.switch.wireTo('B', this.destination, [this.enemies[1]], wp2);
 
       this.head.wireToSwitch(this.switch, [this.enemies[0]]);
+
+
+
+this.backButton = this.game.add.button(this.game.width - 80, 25, 'selback', this.goBack, this);
+    this.backButton.anchor.setTo(0.5,0.5);
+
+
   //    this.game.add.existing(this.head);
     //  this.game.add.existing(this.switch);
      // this.game.add.existing(this.destination);
 
        
-     
+
+    },
+    goBack: function() {
+      this.game.state.states.menu.music.stop();
+      this.game.state.start('menu');
+
     },
     update: function() {
  
@@ -915,7 +944,7 @@ module.exports = Menu;
         var x = this.targetFears;
         this.enemies.forEach(function(enemy) {
             if (!enemy.exists) { x-=1;}
-             this.titleText.setText("Fears to kill: " + x);
+             this.titleText.setText("Level 1 - Fears left: " + x);
          }, this);
 
         if (this.destination.landed && x == 0) {
@@ -948,8 +977,8 @@ module.exports = Menu;
       this.background.scale.y = 2;
     this.targetFears = 3;
       this.game.physics.startSystem(Phaser.Physics.ARCADE);
-       var style = { font: '14px Arial', fill: '#ffffff', align: 'center'};
-      this.titleText = this.game.add.text(0, 0, 'Fears to kill: ' + this.targetFears, style);
+       var style = { font: '20px Arial', fill: '#ffffff', align: 'center'};
+      this.titleText = this.game.add.text(0, 0, 'Level 2 - Fears to kill: ' + this.targetFears, style);
      // this.titleText.anchor.setTo(0.5, 0.5);
 
 
@@ -1014,6 +1043,10 @@ module.exports = Menu;
       switch5.wireTo('B', switch2, [this.enemies[2]])
       this.head.wireToSwitch(switch1, [this.enemies[0]]);
 
+
+    this.backButton = this.game.add.button(this.game.width - 80, 25, 'selback', this.goBack, this);
+    this.backButton.anchor.setTo(0.5,0.5);
+
  /*     this.game.add.existing(this.head);
       this.game.add.existing(switch1);
       this.game.add.existing(switch2);
@@ -1026,12 +1059,20 @@ module.exports = Menu;
          var x = this.targetFears;
         this.enemies.forEach(function(enemy) {
             if (!enemy.exists) { x-=1;}
-             this.titleText.setText("Fears to kill: " + x + " (hint: switch while pulsating)");
+             this.titleText.setText("Level 2 - Fears to kill: " + x + " ");
          }, this);
 
-         if (this.destination.landed) {
+        if (this.destination.landed && x == 0) {
+           this.game.state.start('play3');
+        } else if (this.destination.landed) {
            this.game.state.start('play2');
         }
+           
+    },
+    goBack: function() {
+      this.game.state.states.menu.music.stop();
+      this.game.state.start('menu');
+
     },
     paused: function() {
       // This method will be called when game paused.
@@ -1047,6 +1088,140 @@ module.exports = Menu;
 module.exports = Play2;
 
 },{"../prefabs/destination":2,"../prefabs/enemy":3,"../prefabs/head":4,"../prefabs/switch":7,"../prefabs/waypoint":8}],15:[function(require,module,exports){
+'use strict';
+ var Head = require('../prefabs/head');
+ var Switch = require('../prefabs/switch');
+ var WayPoint = require('../prefabs/waypoint');
+ var Destination = require('../prefabs/destination');
+ var Enemy = require('../prefabs/enemy');
+
+  function Play3() {}
+  Play3.prototype = {
+    preload: function() {
+      // Override this method to add some load operations. 
+      // If you need to use the loader, you may need to use them here.
+    },
+    create: function() {
+      // bg
+      this.background = this.game.add.sprite(0,0,'background');
+      this.background.scale.x = 2;
+      this.background.scale.y = 2;
+
+      // text
+      this.targetFears = 3;
+      this.game.physics.startSystem(Phaser.Physics.ARCADE);
+      var style = { font: '20px Arial', fill: '#ffffff', align: 'center'};
+      this.titleText = this.game.add.text(0, 0, 'Level 3 - Fears to kill: ' + this.targetFears, style);
+
+      // enemies
+      this.enemies = [
+        new Enemy(this.game),
+        new Enemy(this.game),
+        new Enemy(this.game)
+      ];
+
+
+      // head
+      this.head = new Head(this.game);  
+      this.head.x = 60
+      this.head.y = 60;
+    
+      // destination
+      this.destination = new Destination(this.game);
+      this.destination.x = this.game.width - 60;
+      this.destination.y = this.game.height - 60;
+      // switches
+      // left column
+       var switch1 = new Switch(this.game);
+      switch1.x= 60;
+      switch1.y = 200;
+
+       var switch2 = new Switch(this.game);
+      switch2.x= 60;
+      switch2.y = 350;
+
+       var switch3 = new Switch(this.game);
+      switch3.x= 60;
+      switch3.y = 500;
+
+      // diagonal
+       var switch4 = new Switch(this.game);
+      switch4.x= 300;
+      switch4.y = 350;
+
+       var switch5 = new Switch(this.game);
+      switch5.x= 450;
+      switch5.y = 200;
+
+       var switch6 = new Switch(this.game);
+      switch6.x= 600;
+      switch6.y = 60;
+
+      // waypoints
+       var wp1 = new WayPoint(this.game, 
+          600, 400);
+
+      // wiring
+
+      switch1.wireTo('A', switch6, [this.enemies[0]]);
+      switch1.wireTo('B', switch4, [this.enemies[1]]);
+      switch2.wireTo('A', switch5, 0);
+      switch2.wireTo('B', switch3, 0);
+      
+      switch3.wireTo('A', switch4, [this.enemies[2]]);
+      switch3.wireTo('B', this.destination, 0);
+
+      switch6.wireTo('A', switch5, 0);
+      switch6.wireTo('B', switch4, 0, wp1);
+
+      switch4.wireTo('A', switch5, 0);
+      switch4.wireTo('B', this.destination, 0);
+
+      switch5.wireTo('A', switch1, 0);
+      switch5.wireTo('B', switch2, 0);
+
+
+
+      this.head.wireToSwitch(switch1, 0);
+
+
+      this.backButton = this.game.add.button(this.game.width - 80, 25, 'selback', this.goBack, this);
+      this.backButton.anchor.setTo(0.5,0.5);
+    },
+    update: function() {
+      // state update code
+      var x = this.targetFears;
+      this.enemies.forEach(function(enemy) {
+          if (!enemy.exists) { x-=1;}
+           this.titleText.setText("Level 3 - Fears to kill: " + x + " ");
+       }, this);
+
+      if (this.destination.landed && x == 0) {
+         this.goBack();
+      } else if (this.destination.landed) {
+         this.game.state.start('play3');
+      }
+         
+    },
+    paused: function() {
+      // This method will be called when game paused.
+    },
+    render: function() {
+      // Put render operations here.
+    },
+    shutdown: function() {
+      // This method will be called when the state is shut down 
+      // (i.e. you switch to another state from this one).
+    },
+     goBack: function() {
+      this.game.state.states.menu.music.stop();
+      this.game.state.start('menu');
+
+    }
+  };
+module.exports = Play3;
+
+},{"../prefabs/destination":2,"../prefabs/enemy":3,"../prefabs/head":4,"../prefabs/switch":7,"../prefabs/waypoint":8}],16:[function(require,module,exports){
 
 'use strict';
 function Preload() {
@@ -1064,8 +1239,12 @@ Preload.prototype = {
 
     this.load.image('background', 'assets/background.png');
         this.load.image('backgroundlight', 'assets/backgroundlight.png');
-        this.load.image('selbrain', 'assets/selbrain.png');
+        this.load.image('selbrain', 'assets/savethebrain.png');
         this.load.image('selinstr', 'assets/selinstr.png');
+        this.load.image('selback', 'assets/backtomenu.png');
+
+
+
     this.load.image('title', 'assets/title.png');
     this.load.image('mastersynapse', 'assets/mastersynapse.png');
     this.load.image('switchsynapse', 'assets/switchsynapse.png');
@@ -1078,6 +1257,7 @@ Preload.prototype = {
 
     this.load.spritesheet('explosion', 'assets/explosion.png',40,40);
 
+    this.load.image('audioswitch', 'assets/audio.png');
 
     this.load.audio('explosionSound', 'assets/expl.mp3');
     this.load.audio('switchSound', 'assets/switch.mp3');
