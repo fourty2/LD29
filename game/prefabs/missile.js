@@ -2,7 +2,7 @@
 
 var Missile = function(game, x, y, frame) {
   Phaser.Sprite.call(this, game, x, y, 'missile', frame);
-
+  this.bringToTop();
   this.anchor.setTo(0.5,0.5);
  // this.scale.x = 2;
  // this.scale.y = 2;
@@ -30,11 +30,6 @@ var Missile = function(game, x, y, frame) {
 	    this.smokeEmitter.setXSpeed(0, 0);
 	    this.smokeEmitter.setYSpeed(-80, -50); // make smoke drift upwards
 
-	    // Make particles fade out after 1000ms
-	 //   this.smokeEmitter.setAlpha(1, 0, this.SMOKE_LIFETIME,
-	   //     Phaser.Easing.Linear.InOut);
-
-	    // Create the actual particles
 	    this.smokeEmitter.makeParticles('smoke');
 
 	    // Start emitting smoke particles one at a time (explode=false) with a

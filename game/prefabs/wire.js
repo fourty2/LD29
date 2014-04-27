@@ -96,7 +96,7 @@ Wire.prototype.create = function(sourceX, sourceY, destObj) {
 Wire.prototype.spawnEnemies = function() {
 	if (this.enemies) {
 		for (var countEnemies = 0; countEnemies< this.enemies.length; countEnemies++) {
-	  	var sgmt = this.game.rnd.integerInRange(5, this.segments.length-1);
+	  	var sgmt = this.game.rnd.integerInRange(10, this.segments.length-10);
 
 	  	this.enemies[countEnemies].x = this.segments[sgmt].x;
 	  	this.enemies[countEnemies].y = this.segments[sgmt].y;
@@ -163,8 +163,9 @@ Wire.prototype.getExplosion = function(x, y) {
     // If there aren't any available, create a new one
     if (explosion === null) {
         explosion = this.game.add.sprite(0, 0, 'explosion');
-        explosion.scale.x = 3;
-        explosion.scale.y = 3;
+         explosion.bringToTop();
+        explosion.scale.x = 4;
+        explosion.scale.y = 4;
         explosion.anchor.setTo(0.5, 0.5);
 
         // Add an animation for the explosion that kills the sprite when the
