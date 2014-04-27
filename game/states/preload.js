@@ -14,6 +14,9 @@ Preload.prototype = {
     this.load.setPreloadSprite(this.asset);
 
     this.load.image('background', 'assets/background.png');
+        this.load.image('backgroundlight', 'assets/backgroundlight.png');
+        this.load.image('selbrain', 'assets/selbrain.png');
+        this.load.image('selinstr', 'assets/selinstr.png');
     this.load.image('title', 'assets/title.png');
     this.load.image('mastersynapse', 'assets/mastersynapse.png');
     this.load.image('switchsynapse', 'assets/switchsynapse.png');

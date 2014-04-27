@@ -9,7 +9,7 @@ Menu.prototype = {
   create: function() {
     var style = { font: '65px Arial', fill: '#ffffff', align: 'center'};
 
-    this.background = this.game.add.sprite(0,0,'background');
+    this.background = this.game.add.sprite(0,0,'backgroundlight');
       this.background.scale.x = 2;
       this.background.scale.y = 2;
 
@@ -19,24 +19,58 @@ Menu.prototype = {
     this.title.y = -100;
     this.title.scale.x = 2;
     this.title.scale.y = 2;
-    this.game.add.text(170,300,'* send an impulse by clicking on the head (left) (lvl2: top)', { font: '16px Arial', fill: '#ffffff', align: 'center'});
-    this.game.add.text(170,320,'* toggle switches (should show the direction later)', { font: '16px Arial', fill: '#ffffff', align: 'center'});
-    this.game.add.text(170,340,'* kill all flowers', { font: '16px Arial', fill: '#ffffff', align: 'center'});
-    this.game.add.text(170,360,'* (lvl2) you can toggle the switch while the impulse is traveling', { font: '16px Arial', fill: '#ffffff', align: 'center'});
-    this.game.add.text(60,250,'story: you are a doctor who can destroy somebodies fears by rewiring his/hers brain (inception like)',  { font: '16px Arial', fill: '#ffffff', align: 'center'})
-    this.instructionsText = this.game.add.text(this.game.world.centerX, 400, 'Click anywhere to play', { font: '16px Arial', fill: '#ffffff', align: 'center'});
-    this.instructionsText.anchor.setTo(0.5, 0.5);
 
+    this.brainButton = this.game.add.button(this.game.width/2, 310, 'selbrain', this.startGame, this);
+    this.brainButton.anchor.setTo(0.5,0.5);
+    this.brainButton.scale.x = 2;
+    this.brainButton.scale.y = 2;
+
+    this.instructionsButton = this.game.add.button(this.game.width/2, 400, 'selinstr', this.readInstructions, this);
+    this.instructionsButton.anchor.setTo(0.5,0.5);
+    this.instructionsButton.scale.x = 2;
+    this.instructionsButton.scale.y = 2;
+
+    this.game.add.text(220, this.game.height - 40, 'a game by @snooze82 - made for LudumDare 29',  { font: '16px Arial', fill: '#ffffff', align: 'center'});
+
+
+    this.instructionGroup = this.game.add.group();
+    this.instructionGroup.add(
+        this.game.add.text(170,400,'* send an impulse by clicking on the head (left) (lvl2: top)', { font: '16px Arial', fill: '#333333', align: 'center'})
+    );
+
+
+    this.instructionGroup.add(
+    this.game.add.text(170,420,'* toggle switches (should show the direction later)', { font: '16px Arial', fill: '#333333', align: 'center'})
+    );
+    this.instructionGroup.add(
+    this.game.add.text(170,440,'* kill all flowers', { font: '16px Arial', fill: '#333333', align: 'center'})
+    );
+    this.instructionGroup.add(
+    this.game.add.text(170,460,'* (lvl2) you can toggle the switch while the impulse is traveling', { font: '16px Arial', fill: '#333333', align: 'center'})
+    );
+    this.instructionGroup.add(
+    this.game.add.text(60,350,'story: you are a doctor who can destroy somebodies fears by rewiring his/hers brain (inception like)',  { font: '16px Arial', fill: '#333333', align: 'center'})
+    );
+
+    this.instructionGroup.visible = false;
     this.game.add.tween(this.title).to({y:130}, 2000, Phaser.Easing.Bounce.Out, true);
 
 /*    this.sprite.angle = -20;
     this.game.add.tween(this.sprite).to({angle: 20}, 1000, Phaser.Easing.Linear.NONE, true, 0, 1000, true);
     */
   },
+  startGame: function() {
+    this.game.state.start('play');
+
+  },
+  readInstructions: function() {
+    this.instructionsButton.visible = false;
+    this.instructionGroup.visible = true;
+  },
   update: function() {
-    if(this.game.input.activePointer.justPressed()) {
-      this.game.state.start('play');
-    }
+  //  if(this.game.input.activePointer.justPressed()) {
+    //  this.game.state.start('play');
+   // }
   }
 };
 
