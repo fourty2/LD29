@@ -382,10 +382,14 @@ Switch.prototype.wireLanded = function() {
 
 Switch.prototype.toggleSwitch = function() {
 
-	this.stateWires[this.state].setInactive();
-	this.state = this.state == 'A'?'B':'A';
-	var segment = this.stateWires[this.state].segments[0];
-	this.stateWires[this.state].setActive();
+	if (!this.stateWires[this.state].isRunning) {
+		this.stateWires[this.state].fullWire = false;
+		this.stateWires[this.state].setInactive();
+		this.state = this.state == 'A'?'B':'A';
+		var segment = this.stateWires[this.state].segments[0];
+		this.stateWires[this.state].setActive();
+
+	}
 
 
 /*	var rad = segment.angle * (Math.PI / 180);
@@ -464,6 +468,8 @@ var Wire = function(game, parent, sourceX, sourceY, destObj, enemies, waypoint) 
     this.MAX_MISSILES = 1;
     this.create(sourceX, sourceY, destObj);
     this.shoot = false;
+    this.fullWire = false;
+    this.isRunning = false;
     this.spawnEnemies(); 
 
 };
@@ -564,6 +570,7 @@ Wire.prototype.spawnEnemies = function() {
 
 Wire.prototype.fire = function() {
 	this.shoot = true;
+	this.isRunning = true;
 	this.segments[0].fire();
 }
 
@@ -583,7 +590,7 @@ Wire.prototype.setCurrentSegment = function(segment) {
 }
 
 Wire.prototype.setActive = function() {
-	if (!this.fullWire) {
+	if (!this.shoot) {
 		for (var i=0; i<this.segments.length; i++) {
 		this.segments[i].animations.play('clean', 1, true);
 	}
@@ -598,6 +605,8 @@ Wire.prototype.setInactive = function() {
 
 Wire.prototype.handleFullWire = function(scope) {
 	this.fullWire = true;
+	this.shoot = false;
+	this.isRunning = false;
 	scope.destObj.wireLanded();
 }
 

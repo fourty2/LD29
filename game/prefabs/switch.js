@@ -56,10 +56,14 @@ Switch.prototype.wireLanded = function() {
 
 Switch.prototype.toggleSwitch = function() {
 
-	this.stateWires[this.state].setInactive();
-	this.state = this.state == 'A'?'B':'A';
-	var segment = this.stateWires[this.state].segments[0];
-	this.stateWires[this.state].setActive();
+	if (!this.stateWires[this.state].isRunning) {
+		this.stateWires[this.state].fullWire = false;
+		this.stateWires[this.state].setInactive();
+		this.state = this.state == 'A'?'B':'A';
+		var segment = this.stateWires[this.state].segments[0];
+		this.stateWires[this.state].setActive();
+
+	}
 
 
 /*	var rad = segment.angle * (Math.PI / 180);
