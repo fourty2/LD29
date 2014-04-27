@@ -128,7 +128,22 @@ Wire.prototype.setCurrentSegment = function(segment) {
   	 }
 }
 
+Wire.prototype.setActive = function() {
+	if (!this.fullWire) {
+		for (var i=0; i<this.segments.length; i++) {
+		this.segments[i].animations.play('clean', 1, true);
+	}
+	}
+}
+
+Wire.prototype.setInactive = function() {
+	for (var i=0; i<this.segments.length; i++) {
+		this.segments[i].animations.play('inactive', 1, true);
+	}
+}
+
 Wire.prototype.handleFullWire = function(scope) {
+	this.fullWire = true;
 	scope.destObj.wireLanded();
 }
 

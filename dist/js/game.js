@@ -276,6 +276,8 @@ var Segment = function(game, x, y, frame) {
   this.animations.add('fire', [0]);
   var trailAnim = this.animations.add('firetrail', [1]);
   this.animations.add('full', [2]);
+
+  this.animations.add('inactive', [3]);
   trailAnim.onComplete.add(this.fireNextSegment, this);
   this.animations.add('clean', [0]);
 
@@ -342,11 +344,11 @@ var Switch = function(game, parent) {
 	this.identifier = this.game.add.sprite(2,2,'synapseidentifiers', 0);
 	this.identifier.anchor.setTo(0.5,0.5);
 	this.add(this.identifier);
-
+/*
 
 	this.indicator = this.game.add.sprite(0,0, 'switchindicator');
 	this.indicator.anchor.setTo(0.5,0.5);
-
+*/
 };
 
 Switch.prototype = Object.create(Phaser.Group.prototype);
@@ -361,12 +363,15 @@ Switch.prototype.wireTo = function(state, obj, enemies, waypoint) {
 	this.stateWires[state] = new Wire(this.game, null, this.x, this.y,
                     obj, enemies, waypoint);
 	if (state == 'A') {
-		var segment = this.stateWires[state].segments[0];
+	/*	var segment = this.stateWires[state].segments[0];
 		
 		var rad = segment.angle * (Math.PI / 180);
 	  	this.indicator.x = Math.round(this.x + Math.cos(rad) * 32);
-	  	this.indicator.y = Math.round(this.y + Math.sin(rad) * 32);
+	  	this.indicator.y = Math.round(this.y + Math.sin(rad) * 32);*/
+	  	this.stateWires[state].setActive();
 		//this.indicator.x+=30;
+	} else {
+		this.stateWires[state].setInactive();
 	}
 	this.game.add.existing(this.stateWires[state]);
 };
@@ -376,15 +381,19 @@ Switch.prototype.wireLanded = function() {
 }
 
 Switch.prototype.toggleSwitch = function() {
+
+	this.stateWires[this.state].setInactive();
 	this.state = this.state == 'A'?'B':'A';
 	var segment = this.stateWires[this.state].segments[0];
-	
-	var rad = segment.angle * (Math.PI / 180);
+	this.stateWires[this.state].setActive();
+
+
+/*	var rad = segment.angle * (Math.PI / 180);
 	
 	 var nextX  = Math.round(this.x + Math.cos(rad) * 32);
 	 var nextY = Math.round(this.y + Math.sin(rad) * 32);
 	this.game.add.tween(this.indicator).to({x: nextX, y:nextY}, 500, Phaser.Easing.Circular.Out, true);
-
+*/
 
 //    this.animations.play(this.state, 1, true);
 }
@@ -573,7 +582,22 @@ Wire.prototype.setCurrentSegment = function(segment) {
   	 }
 }
 
+Wire.prototype.setActive = function() {
+	if (!this.fullWire) {
+		for (var i=0; i<this.segments.length; i++) {
+		this.segments[i].animations.play('clean', 1, true);
+	}
+	}
+}
+
+Wire.prototype.setInactive = function() {
+	for (var i=0; i<this.segments.length; i++) {
+		this.segments[i].animations.play('inactive', 1, true);
+	}
+}
+
 Wire.prototype.handleFullWire = function(scope) {
+	this.fullWire = true;
 	scope.destObj.wireLanded();
 }
 

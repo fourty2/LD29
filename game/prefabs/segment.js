@@ -11,6 +11,8 @@ var Segment = function(game, x, y, frame) {
   this.animations.add('fire', [0]);
   var trailAnim = this.animations.add('firetrail', [1]);
   this.animations.add('full', [2]);
+
+  this.animations.add('inactive', [3]);
   trailAnim.onComplete.add(this.fireNextSegment, this);
   this.animations.add('clean', [0]);
 
