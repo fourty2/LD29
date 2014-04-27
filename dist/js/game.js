@@ -505,7 +505,9 @@ Menu.prototype = {
     var style = { font: '65px Arial', fill: '#ffffff', align: 'center'};
 
     this.background = this.game.add.sprite(0,0,'background');
-
+      this.background.scale.x = 2;
+      this.background.scale.y = 2;
+      
     this.titleText = this.game.add.text(this.game.world.centerX, 120, 'FearWire', style);
     this.titleText.anchor.setTo(0.5, 0.5);
     this.game.add.text(170,200,'* send an impulse by clicking on the head (left) (lvl2: top)', { font: '16px Arial', fill: '#ffffff', align: 'center'});
@@ -773,7 +775,7 @@ Preload.prototype = {
   },
   update: function() {
     if(!!this.ready) {
-      this.game.state.start('play');
+      this.game.state.start('menu');
     }
   },
   onLoadComplete: function() {
