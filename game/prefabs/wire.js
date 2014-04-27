@@ -91,7 +91,8 @@ Wire.prototype.create = function(sourceX, sourceY, destObj) {
 
     // Create a group for explosions
     this.explosionGroup = this.game.add.group();
-
+	this.audio = this.game.add.audio('wireSound');
+	this.explosionSound = this.game.add.audio('explosionSound');
 
 
 };
@@ -113,6 +114,7 @@ Wire.prototype.spawnEnemies = function() {
 Wire.prototype.fire = function() {
 	this.shoot = true;
 	this.isRunning = true;
+	this.audio.play('',0,1,true);
 	this.segments[0].fire();
 }
 
@@ -146,9 +148,10 @@ Wire.prototype.setInactive = function() {
 }
 
 Wire.prototype.handleFullWire = function(scope) {
-	this.fullWire = true;
-	this.shoot = false;
-	this.isRunning = false;
+	scope.fullWire = true;
+	scope.shoot = false;
+	scope.isRunning = false;
+	scope.audio.pause();
 	scope.destObj.wireLanded();
 }
 
@@ -210,6 +213,7 @@ Wire.prototype.getExplosion = function(x, y) {
     explosion.angle = this.game.rnd.integerInRange(0, 360);
 
     // Play the animation
+    this.explosionSound.play();
     explosion.animations.play('boom');
 
     // Return the explosion itself in case we want to do anything else with it

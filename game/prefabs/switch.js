@@ -18,6 +18,8 @@ var Switch = function(game, parent) {
 	this.identifier = this.game.add.sprite(2,2,'synapseidentifiers', 0);
 	this.identifier.anchor.setTo(0.5,0.5);
 	this.add(this.identifier);
+	this.audio = this.game.add.audio('switchSound');
+
 /*
 
 	this.indicator = this.game.add.sprite(0,0, 'switchindicator');
@@ -57,6 +59,7 @@ Switch.prototype.wireLanded = function() {
 Switch.prototype.toggleSwitch = function() {
 
 	if (!this.stateWires[this.state].isRunning) {
+		this.audio.play();
 		this.stateWires[this.state].fullWire = false;
 		this.stateWires[this.state].setInactive();
 		this.state = this.state == 'A'?'B':'A';

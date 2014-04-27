@@ -30,19 +30,9 @@ Preload.prototype = {
     this.load.spritesheet('explosion', 'assets/explosion.png',40,40);
 
 
-  //  this.load.image('mastersynapse', 'assets/mastersynapse.png');
-
-
-    // old sprites
-    this.load.spritesheet('wire', 'assets/wire.png', 32, 32);
-    this.load.spritesheet('start', 'assets/start.png', 32, 32);
-    this.load.spritesheet('rand', 'assets/rand.png', 153, 153);
-
-    this.load.spritesheet('switch', 'assets/switch.png', 85, 86);
-    this.load.spritesheet('switchindicator', 'assets/switchindicator.png', 34, 35);
-    this.load.spritesheet('switchinput', 'assets/switchinput.png', 10, 31);
-
-    this.load.spritesheet('flower', 'assets/flower.png', 32, 32);
+    this.load.audio('explosionSound', 'assets/expl.mp3');
+    this.load.audio('switchSound', 'assets/switch.mp3');
+    this.load.audio('wireSound', 'assets/wire.mp3');
   },
   create: function() {
     this.asset.cropEnabled = false;

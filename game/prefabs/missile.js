@@ -9,7 +9,7 @@ var Missile = function(game, x, y, frame) {
 
     game.physics.enable(this, Phaser.Physics.ARCADE);
     this.SPEED = 350; // missile speed pixels/second
-    this.TURN_RATE = 5; // turn rate in degrees/frame
+    this.TURN_RATE = 10; // turn rate in degrees/frame
     this.WOBBLE_LIMIT = 15; // degrees
     this.WOBBLE_SPEED = 250; // milliseconds
     this.SMOKE_LIFETIME = 500; // milliseconds

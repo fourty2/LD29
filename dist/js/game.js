@@ -164,7 +164,7 @@ var Missile = function(game, x, y, frame) {
 
     game.physics.enable(this, Phaser.Physics.ARCADE);
     this.SPEED = 350; // missile speed pixels/second
-    this.TURN_RATE = 5; // turn rate in degrees/frame
+    this.TURN_RATE = 10; // turn rate in degrees/frame
     this.WOBBLE_LIMIT = 15; // degrees
     this.WOBBLE_SPEED = 250; // milliseconds
     this.SMOKE_LIFETIME = 500; // milliseconds
@@ -344,6 +344,8 @@ var Switch = function(game, parent) {
 	this.identifier = this.game.add.sprite(2,2,'synapseidentifiers', 0);
 	this.identifier.anchor.setTo(0.5,0.5);
 	this.add(this.identifier);
+	this.audio = this.game.add.audio('switchSound');
+
 /*
 
 	this.indicator = this.game.add.sprite(0,0, 'switchindicator');
@@ -383,6 +385,7 @@ Switch.prototype.wireLanded = function() {
 Switch.prototype.toggleSwitch = function() {
 
 	if (!this.stateWires[this.state].isRunning) {
+		this.audio.play();
 		this.stateWires[this.state].fullWire = false;
 		this.stateWires[this.state].setInactive();
 		this.state = this.state == 'A'?'B':'A';
@@ -549,7 +552,8 @@ Wire.prototype.create = function(sourceX, sourceY, destObj) {
 
     // Create a group for explosions
     this.explosionGroup = this.game.add.group();
-
+	this.audio = this.game.add.audio('wireSound');
+	this.explosionSound = this.game.add.audio('explosionSound');
 
 
 };
@@ -571,6 +575,7 @@ Wire.prototype.spawnEnemies = function() {
 Wire.prototype.fire = function() {
 	this.shoot = true;
 	this.isRunning = true;
+	this.audio.play('',0,1,true);
 	this.segments[0].fire();
 }
 
@@ -604,9 +609,10 @@ Wire.prototype.setInactive = function() {
 }
 
 Wire.prototype.handleFullWire = function(scope) {
-	this.fullWire = true;
-	this.shoot = false;
-	this.isRunning = false;
+	scope.fullWire = true;
+	scope.shoot = false;
+	scope.isRunning = false;
+	scope.audio.pause();
 	scope.destObj.wireLanded();
 }
 
@@ -668,6 +674,7 @@ Wire.prototype.getExplosion = function(x, y) {
     explosion.angle = this.game.rnd.integerInRange(0, 360);
 
     // Play the animation
+    this.explosionSound.play();
     explosion.animations.play('boom');
 
     // Return the explosion itself in case we want to do anything else with it
@@ -1072,19 +1079,9 @@ Preload.prototype = {
     this.load.spritesheet('explosion', 'assets/explosion.png',40,40);
 
 
-  //  this.load.image('mastersynapse', 'assets/mastersynapse.png');
-
-
-    // old sprites
-    this.load.spritesheet('wire', 'assets/wire.png', 32, 32);
-    this.load.spritesheet('start', 'assets/start.png', 32, 32);
-    this.load.spritesheet('rand', 'assets/rand.png', 153, 153);
-
-    this.load.spritesheet('switch', 'assets/switch.png', 85, 86);
-    this.load.spritesheet('switchindicator', 'assets/switchindicator.png', 34, 35);
-    this.load.spritesheet('switchinput', 'assets/switchinput.png', 10, 31);
-
-    this.load.spritesheet('flower', 'assets/flower.png', 32, 32);
+    this.load.audio('explosionSound', 'assets/expl.mp3');
+    this.load.audio('switchSound', 'assets/switch.mp3');
+    this.load.audio('wireSound', 'assets/wire.mp3');
   },
   create: function() {
     this.asset.cropEnabled = false;
