@@ -13,6 +13,18 @@ Preload.prototype = {
     this.load.onLoadComplete.addOnce(this.onLoadComplete, this);
     this.load.setPreloadSprite(this.asset);
 
+    this.load.image('background', 'assets/background.png');
+    this.load.image('mastersynapse', 'assets/mastersynapse.png');
+    this.load.image('switchsynapse', 'assets/switchsynapse.png');
+    this.load.spritesheet('synapseidentifiers', 'assets/synapseidentifiers.png', 13,13);
+    this.load.image('wireanchor', 'assets/wireanchor.png');
+    this.load.spritesheet('segment', 'assets/segment.png',32,32);
+
+
+  //  this.load.image('mastersynapse', 'assets/mastersynapse.png');
+
+
+    // old sprites
     this.load.spritesheet('wire', 'assets/wire.png', 32, 32);
     this.load.spritesheet('start', 'assets/start.png', 32, 32);
     this.load.spritesheet('rand', 'assets/rand.png', 153, 153);
@@ -28,7 +40,7 @@ Preload.prototype = {
   },
   update: function() {
     if(!!this.ready) {
-      this.game.state.start('menu');
+      this.game.state.start('play');
     }
   },
   onLoadComplete: function() {

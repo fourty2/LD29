@@ -1,25 +1,31 @@
 'use strict';
 var Wire = require('../prefabs/wire');
-var Switch = function(game, x, y, frame) {
-	Phaser.Sprite.call(this, game, x, y, 'switch', frame);
-	this.anchor.setTo(0.5,0.5);
-	this.inputEnabled = true;
+var Switch = function(game, parent) {
+	Phaser.Group.call(this, game, parent);
+
+
+
+	this.synapse = this.game.add.sprite(0,0,'switchsynapse');
+	this.synapse.anchor.setTo(0.5,0.5);
+	this.add(this.synapse);
+
+	this.synapse.inputEnabled = true;
 	this.state = 'A';
 	this.stateWires = Array();
-	this.animations.add('B', [0]);
-	this.animations.add('A', [0]);
-	this.events.onInputDown.add(this.toggleSwitch, this);
+	this.synapse.events.onInputDown.add(this.toggleSwitch, this);
+	this.synapse.events.onInputOver.add(this.tweenOver, this);
 
-	this.backgroundsprite = this.game.add.sprite(x,y,'rand');
-	this.backgroundsprite.anchor.setTo(0.5,0.5);
-	this.backgroundsprite.angle = this.game.rnd.integerInRange(0,180);
+	this.identifier = this.game.add.sprite(2,2,'synapseidentifiers', 0);
+	this.identifier.anchor.setTo(0.5,0.5);
+	this.add(this.identifier);
 
-	this.indicator = this.game.add.sprite(x,y, 'switchindicator');
+
+	this.indicator = this.game.add.sprite(0,0, 'switchindicator');
 	this.indicator.anchor.setTo(0.5,0.5);
 
 };
 
-Switch.prototype = Object.create(Phaser.Sprite.prototype);
+Switch.prototype = Object.create(Phaser.Group.prototype);
 Switch.prototype.constructor = Switch;
 
 Switch.prototype.update = function() {
@@ -27,9 +33,9 @@ Switch.prototype.update = function() {
   // write your prefab's specific update code here
   
 };
-Switch.prototype.wireTo = function(state, obj, enemies) {
+Switch.prototype.wireTo = function(state, obj, enemies, waypoint) {
 	this.stateWires[state] = new Wire(this.game, null, this.x, this.y,
-                    obj, enemies);
+                    obj, enemies, waypoint);
 	if (state == 'A') {
 		var segment = this.stateWires[state].segments[0];
 		
@@ -56,11 +62,16 @@ Switch.prototype.toggleSwitch = function() {
 	this.game.add.tween(this.indicator).to({x: nextX, y:nextY}, 500, Phaser.Easing.Circular.Out, true);
 
 
-    this.animations.play(this.state, 1, true);
+//    this.animations.play(this.state, 1, true);
 }
+Switch.prototype.tweenOver = function() {
+	var tw = this.game.add.tween(this.synapse.scale).to({x:1.5, y:1.5}, 150, Phaser.Easing.Circular.In, true,0,	1,true);
+
+}
+
 Switch.prototype.setInputSegment = function(segment) {
 	
-	this.inputindicator = this.game.add.sprite(0,0,'switchinput');
+/*	this.inputindicator = this.game.add.sprite(0,0,'switchinput');
 	this.inputindicator.anchor.setTo(0.5,0.5);
 	var rad = segment.angle * (Math.PI / 180);
 	  	this.inputindicator.x = Math.round(this.x - Math.cos(rad) * 32);
@@ -68,7 +79,7 @@ Switch.prototype.setInputSegment = function(segment) {
 	  	console.log(this.inputindicator.z);
 	  	this.inputindicator.z = -1;
 	  	console.log(this.z);
-	  this.inputindicator.bringToTop();
+	  this.inputindicator.bringToTop();*/
 }
 
 module.exports = Switch;

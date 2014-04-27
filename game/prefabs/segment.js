@@ -1,16 +1,16 @@
 'use strict';
 
 var Segment = function(game, x, y, frame) {
-  Phaser.Sprite.call(this, game, x, y, 'wire', frame);
-  this.anchor.setTo(0, 0.5);
+  Phaser.Sprite.call(this, game, x, y, 'segment', frame);
+  this.anchor.setTo(0.5, 0.5);
   this.game.physics.arcade.enableBody(this);
   this.body.allowGravity  = false;
   this.body.immovable = true;
 
 
-  this.animations.add('fire', [1,2,3,4,5]);
-  var trailAnim = this.animations.add('firetrail', [1,7,8,9,10]);
-  this.animations.add('full', [6]);
+  this.animations.add('fire', [0]);
+  var trailAnim = this.animations.add('firetrail', [1]);
+  this.animations.add('full', [2]);
   trailAnim.onComplete.add(this.fireNextSegment, this);
   this.animations.add('clean', [0]);
 

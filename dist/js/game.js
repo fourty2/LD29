@@ -3,7 +3,7 @@
 
 //global variables
 window.onload = function () {
-  var game = new Phaser.Game(800, 600, Phaser.AUTO, 'fearwire');
+  var game = new Phaser.Game(800, 600, Phaser.AUTO, 'drbrainwire',null, null, false);
 
   // Game States
   game.state.add('boot', require('./states/boot'));
@@ -19,16 +19,24 @@ window.onload = function () {
 },{"./states/boot":9,"./states/gameover":10,"./states/menu":11,"./states/play":12,"./states/play2":13,"./states/preload":14}],2:[function(require,module,exports){
 'use strict';
 
-var Destination = function(game, x, y, frame) {
-  Phaser.Sprite.call(this, game, x, y, 'start', frame);
- this.anchor.setTo(0.5,0.5);
- this.angle = 180;
+var Destination = function(game, parent) {
+	Phaser.Group.call(this, game, parent);
+
+	this.synapse = this.game.add.sprite(0,0,'mastersynapse');
+	this.synapse.anchor.setTo(0.5,0.5);
+	this.add(this.synapse);
+
+	this.identifier = this.game.add.sprite(-4,-4,'synapseidentifiers', 2);
+	this.identifier.anchor.setTo(0.5,0.5);
+	this.add(this.identifier);
+
+// this.angle = 180;
  this.landed = false;
   // initialize your prefab here
   
 };
 
-Destination.prototype = Object.create(Phaser.Sprite.prototype);
+Destination.prototype = Object.create(Phaser.Group.prototype);
 Destination.prototype.constructor = Destination;
 Destination.prototype.wireLanded = function() {
 
@@ -80,16 +88,31 @@ module.exports = Enemy;
 'use strict';
 var Wire = require('../prefabs/wire');
 
-var Head = function(game, x, y, frame) {
-  Phaser.Sprite.call(this, game, x, y, 'start', frame);
+var Head = function(game, parent) {
+	Phaser.Group.call(this, game, parent);
+
+
+	this.synapse = this.game.add.sprite(0,0,'mastersynapse');
+	this.synapse.anchor.setTo(0.5,0.5);
+	this.add(this.synapse);
+
+	this.identifier = this.game.add.sprite(-4,-4,'synapseidentifiers', 1);
+	this.identifier.anchor.setTo(0.5,0.5);
+	this.add(this.identifier);
+
+/*  Phaser.Sprite.call(this, game, x, y, 'mastersynapse', frame);
   this.anchor.setTo(0.5,0.5);
+
+  this.game.add.sprite(this.x,this.y,'synapseidentifiers',1);
+*/
   // initialize your prefab here
-   this.inputEnabled = true;
-   this.events.onInputDown.add(this.clickListener, this);
+   this.synapse.inputEnabled = true;
+   this.synapse.events.onInputDown.add(this.clickListener, this);
+   	this.synapse.events.onInputOver.add(this.tweenOver, this);
   
 };
 
-Head.prototype = Object.create(Phaser.Sprite.prototype);
+Head.prototype = Object.create(Phaser.Group.prototype);
 Head.prototype.constructor = Head;
 
 Head.prototype.update = function() {
@@ -111,22 +134,27 @@ Head.prototype.clickListener = function() {
 	}
 };
 
+Head.prototype.tweenOver = function() {
+	var tw = this.game.add.tween(this.synapse.scale).to({x:1.5, y:1.5}, 150, Phaser.Easing.Circular.In, true,0,	1,true);
+
+}
+
 module.exports = Head;
 
 },{"../prefabs/wire":8}],5:[function(require,module,exports){
 'use strict';
 
 var Segment = function(game, x, y, frame) {
-  Phaser.Sprite.call(this, game, x, y, 'wire', frame);
-  this.anchor.setTo(0, 0.5);
+  Phaser.Sprite.call(this, game, x, y, 'segment', frame);
+  this.anchor.setTo(0.5, 0.5);
   this.game.physics.arcade.enableBody(this);
   this.body.allowGravity  = false;
   this.body.immovable = true;
 
 
-  this.animations.add('fire', [1,2,3,4,5]);
-  var trailAnim = this.animations.add('firetrail', [1,7,8,9,10]);
-  this.animations.add('full', [6]);
+  this.animations.add('fire', [0]);
+  var trailAnim = this.animations.add('firetrail', [1]);
+  this.animations.add('full', [2]);
   trailAnim.onComplete.add(this.fireNextSegment, this);
   this.animations.add('clean', [0]);
 
@@ -174,26 +202,32 @@ module.exports = Segment;
 },{}],6:[function(require,module,exports){
 'use strict';
 var Wire = require('../prefabs/wire');
-var Switch = function(game, x, y, frame) {
-	Phaser.Sprite.call(this, game, x, y, 'switch', frame);
-	this.anchor.setTo(0.5,0.5);
-	this.inputEnabled = true;
+var Switch = function(game, parent) {
+	Phaser.Group.call(this, game, parent);
+
+
+
+	this.synapse = this.game.add.sprite(0,0,'switchsynapse');
+	this.synapse.anchor.setTo(0.5,0.5);
+	this.add(this.synapse);
+
+	this.synapse.inputEnabled = true;
 	this.state = 'A';
 	this.stateWires = Array();
-	this.animations.add('B', [0]);
-	this.animations.add('A', [0]);
-	this.events.onInputDown.add(this.toggleSwitch, this);
+	this.synapse.events.onInputDown.add(this.toggleSwitch, this);
+	this.synapse.events.onInputOver.add(this.tweenOver, this);
 
-	this.backgroundsprite = this.game.add.sprite(x,y,'rand');
-	this.backgroundsprite.anchor.setTo(0.5,0.5);
-	this.backgroundsprite.angle = this.game.rnd.integerInRange(0,180);
+	this.identifier = this.game.add.sprite(2,2,'synapseidentifiers', 0);
+	this.identifier.anchor.setTo(0.5,0.5);
+	this.add(this.identifier);
 
-	this.indicator = this.game.add.sprite(x,y, 'switchindicator');
+
+	this.indicator = this.game.add.sprite(0,0, 'switchindicator');
 	this.indicator.anchor.setTo(0.5,0.5);
 
 };
 
-Switch.prototype = Object.create(Phaser.Sprite.prototype);
+Switch.prototype = Object.create(Phaser.Group.prototype);
 Switch.prototype.constructor = Switch;
 
 Switch.prototype.update = function() {
@@ -201,9 +235,9 @@ Switch.prototype.update = function() {
   // write your prefab's specific update code here
   
 };
-Switch.prototype.wireTo = function(state, obj, enemies) {
+Switch.prototype.wireTo = function(state, obj, enemies, waypoint) {
 	this.stateWires[state] = new Wire(this.game, null, this.x, this.y,
-                    obj, enemies);
+                    obj, enemies, waypoint);
 	if (state == 'A') {
 		var segment = this.stateWires[state].segments[0];
 		
@@ -230,11 +264,16 @@ Switch.prototype.toggleSwitch = function() {
 	this.game.add.tween(this.indicator).to({x: nextX, y:nextY}, 500, Phaser.Easing.Circular.Out, true);
 
 
-    this.animations.play(this.state, 1, true);
+//    this.animations.play(this.state, 1, true);
 }
+Switch.prototype.tweenOver = function() {
+	var tw = this.game.add.tween(this.synapse.scale).to({x:1.5, y:1.5}, 150, Phaser.Easing.Circular.In, true,0,	1,true);
+
+}
+
 Switch.prototype.setInputSegment = function(segment) {
 	
-	this.inputindicator = this.game.add.sprite(0,0,'switchinput');
+/*	this.inputindicator = this.game.add.sprite(0,0,'switchinput');
 	this.inputindicator.anchor.setTo(0.5,0.5);
 	var rad = segment.angle * (Math.PI / 180);
 	  	this.inputindicator.x = Math.round(this.x - Math.cos(rad) * 32);
@@ -242,7 +281,7 @@ Switch.prototype.setInputSegment = function(segment) {
 	  	console.log(this.inputindicator.z);
 	  	this.inputindicator.z = -1;
 	  	console.log(this.z);
-	  this.inputindicator.bringToTop();
+	  this.inputindicator.bringToTop();*/
 }
 
 module.exports = Switch;
@@ -285,9 +324,10 @@ module.exports = Waypoint;
 'use strict';
 
 var Segment = require('../prefabs/segment');
-var Wire = function(game, parent, sourceX, sourceY, destObj, enemies) {
+var Wire = function(game, parent, sourceX, sourceY, destObj, enemies, waypoint) {
     Phaser.Group.call(this, game, parent);
     this.enemies = enemies;
+    this.waypoint = waypoint;
     this.create(sourceX, sourceY, destObj);
     this.spawnEnemies(); 
 };
@@ -307,9 +347,34 @@ Wire.prototype.create = function(sourceX, sourceY, destObj) {
 	  var pStart = this.pSource;
 	  var i =0 ;
 	  var lastSegment = null;
-	  while (this.iDistance > 16 && i < 40) {
+
+	  // very first segment is anchor
+		//var segment = this.stateWires[state].segments[0];
+		
+		//var rad = segment.angle * (Math.PI / 180);
+	  	pStart.x = Math.round(pStart.x + Math.cos(this.iAngle) * 16);
+	  	pStart.y = Math.round(pStart.y + Math.sin(this.iAngle) * 16);
+
+	  	var anchor = this.game.add.sprite(pStart.x,pStart.y,'wireanchor');
+	  	anchor.anchor.setTo(0.5,0.5);
+
+	  	this.add(anchor);
+
+	  	if (this.waypoint) {
+	  		this.pWaypoint = new Phaser.Point(this.waypoint.x, this.waypoint.y);
+	  	}
+
+
+	  while (this.iDistance > 5 && i < 100) {
 	  		i++;
-	  		this.iAngle = this.game.physics.arcade.angleBetween(pStart, this.pDest);
+
+	  		if (this.pWaypoint && Phaser.Point.distance(pStart, this.pWaypoint) > 50) {
+	  			this.iAngle = this.game.physics.arcade.angleBetween(pStart, this.pWaypoint);
+	  		} else {
+	  			this.pWaypoint = false;
+		  		this.iAngle = this.game.physics.arcade.angleBetween(pStart, this.pDest);
+	  		}
+
 	  		
 	  		var segment = new Segment(this.game, pStart.x, pStart.y);
 
@@ -318,15 +383,15 @@ Wire.prototype.create = function(sourceX, sourceY, destObj) {
 	  		}
 			lastSegment = segment;
 			var variance = 0;
-			if (this.iDistance > 100) {
-				variance = this.game.rnd.integerInRange(-20,20)
+			if (this.iDistance > 20) {
+				variance = (Math.sin(pStart.x) + Math.cos(pStart.y)) * 21;//this.game.rnd.integerInRange(-20,20)
 			}
 
 	  		segment.angle = (this.iAngle * (180/Math.PI)) + variance ;
 	  		// nächsten punkt ausrechnen
 	  		var rad = segment.angle * (Math.PI / 180);
-	  		pStart.x = Math.round(pStart.x + Math.cos(rad) * 32);
-	  		pStart.y = Math.round(pStart.y + Math.sin(rad) * 32);
+	  		pStart.x = Math.round(pStart.x + Math.cos(rad) * 7);
+	  		pStart.y = Math.round(pStart.y + Math.sin(rad) * 7);
 			this.iDistance = Phaser.Point.distance(pStart, this.pDest);
 
 			this.add(segment);
@@ -342,7 +407,7 @@ Wire.prototype.create = function(sourceX, sourceY, destObj) {
 Wire.prototype.spawnEnemies = function() {
 	if (this.enemies) {
 		for (var countEnemies = 0; countEnemies< this.enemies.length; countEnemies++) {
-	  	var sgmt = this.game.rnd.integerInRange(1, this.segments.length-1);
+	  	var sgmt = this.game.rnd.integerInRange(5, this.segments.length-1);
 
 	  	this.enemies[countEnemies].x = this.segments[sgmt].x;
 	  	this.enemies[countEnemies].y = this.segments[sgmt].y;
@@ -383,7 +448,17 @@ Boot.prototype = {
   },
   create: function() {
     this.game.input.maxPointers = 1;
+  //            this.game.scale.setShowAll();
+    //  this.game.scale.refresh();
+     // this.game.stage.smoothed = false;
+
+/*    canvas.getContext('2d').webkitImageSmoothingEnabled = false;
+canvas.getContext('2d').oImageSmoothingEnabled = false;
+canvas.getContext('2d').mozImageSmoothingEnabled = false;
+canvas.getContext('2d').imageSmoothingEnabled = false;
+*/
     this.game.state.start('preload');
+
   }
 };
 
@@ -429,6 +504,8 @@ Menu.prototype = {
   create: function() {
     var style = { font: '65px Arial', fill: '#ffffff', align: 'center'};
 
+    this.background = this.game.add.sprite(0,0,'background');
+
     this.titleText = this.game.add.text(this.game.world.centerX, 120, 'FearWire', style);
     this.titleText.anchor.setTo(0.5, 0.5);
     this.game.add.text(170,200,'* send an impulse by clicking on the head (left) (lvl2: top)', { font: '16px Arial', fill: '#ffffff', align: 'center'});
@@ -468,9 +545,12 @@ module.exports = Menu;
 
     create: function() {
       this.targetFears = 2;
-      this.game.stage.backgroundColor = '#342d36';
+
+      this.background = this.game.add.sprite(0,0,'background');
+      this.background.scale.x = 2;
+      this.background.scale.y = 2;
       this.game.physics.startSystem(Phaser.Physics.ARCADE);
-       var style = { font: '24px Arial', fill: '#ffffff', align: 'center'};
+       var style = { font: '12px Arial', fill: '#333333', align: 'center'};
       this.titleText = this.game.add.text(0, 0, 'Fears to kill: ' + this.targetFears, style);
      // this.titleText.anchor.setTo(0.5, 0.5);
 
@@ -481,28 +561,35 @@ module.exports = Menu;
         ];
 
 
-      this.head = new Head(this.game, 16, this.game.height/2);
-      this.switch = new Switch(this.game, this.game.width/2, this.game.height/2);
-      this.destination = new Destination(this.game, this.game.width - 16, this.game.height/2);
+      this.head = new Head(this.game);
+      this.head.x = 16;
+      this.head.y = this.game.height/2;
+
+      this.switch = new Switch(this.game);
+      this.switch.x = this.game.width/2;
+      this.switch.y = this.game.height/2;
+      this.destination = new Destination(this.game);
+      this.destination.x = this.game.width - 16;
+      this.destination.y = this.game.height/2;
 
 
       var wp1 = new WayPoint(this.game, 
           (this.game.width/4 * 3), (this.game.height/4) * 1);
-      wp1.wireTo(this.destination);
+     // wp1.wireTo(this.destination);
 
       var wp2 = new WayPoint(this.game,
           (this.game.width/4 * 3), (this.game.height/4) * 3);
-      wp2.wireTo(this.destination);
+      //wp2.wireTo(this.destination);
 
 
-      this.switch.wireTo('A', wp1, 0);
+      this.switch.wireTo('A', this.destination, 0, wp1);
 
-      this.switch.wireTo('B', wp2, [this.enemies[1]]);
+      this.switch.wireTo('B', this.destination, [this.enemies[1]], wp2);
 
       this.head.wireToSwitch(this.switch, [this.enemies[0]]);
-      this.game.add.existing(this.head);
-      this.game.add.existing(this.switch);
-      this.game.add.existing(this.destination);
+  //    this.game.add.existing(this.head);
+    //  this.game.add.existing(this.switch);
+     // this.game.add.existing(this.destination);
 
 
     },
@@ -540,9 +627,12 @@ module.exports = Menu;
       // If you need to use the loader, you may need to use them here.
     },
     create: function() {
+       this.background = this.game.add.sprite(0,0,'background');
+             this.background.scale.x = 2;
+      this.background.scale.y = 2;
     this.targetFears = 3;
       this.game.physics.startSystem(Phaser.Physics.ARCADE);
-       var style = { font: '24px Arial', fill: '#ffffff', align: 'center'};
+       var style = { font: '14px Arial', fill: '#ffffff', align: 'center'};
       this.titleText = this.game.add.text(0, 0, 'Fears to kill: ' + this.targetFears, style);
      // this.titleText.anchor.setTo(0.5, 0.5);
 
@@ -554,25 +644,43 @@ module.exports = Menu;
         ];
 
 
-      this.head = new Head(this.game, this.game.width / 2, 16);
-      this.head.angle = 90;
-      this.destination = new Destination(this.game, this.game.width /2, this.game.height - 16);
-      this.destination.angle = -90;
-      var switch1 = new Switch(this.game, this.game.width/4, this.game.height/4);
-      var switch2 = new Switch(this.game, (this.game.width/4)*3, (this.game.height/4));
+      this.head = new Head(this.game);
+      
+      this.head.x = this.game.width / 2;
+      this.head.y = 16;
+    
+      this.destination = new Destination(this.game);
+      
+      this.destination.x = this.game.width /2;
+      this.destination.y = this.game.height - 16;
 
-      var switch3 = new Switch(this.game, (this.game.width/4)*2, this.game.height/2);
+      var switch1 = new Switch(this.game);
+      switch1.x= this.game.width/6;
+      switch1.y = this.game.height/4;
 
-      var switch4 = new Switch(this.game, (this.game.width/4), (this.game.height/4)*3);
-      var switch5 = new Switch(this.game, (this.game.width/4) *3, (this.game.height/4)*3);
+      var switch2 = new Switch(this.game);
+      switch2.x = (this.game.width/6)*5;
+      switch2.y = (this.game.height/4);
+
+      var switch3 = new Switch(this.game);
+      switch3.x = (this.game.width/4)*2;
+      switch3.y = this.game.height/2;
+  
+      var switch4 = new Switch(this.game);
+      switch4.x = (this.game.width/4);
+      switch4.y = (this.game.height/4)*3;
+
+      var switch5 = new Switch(this.game);
+      switch5.x = (this.game.width/4) *3;
+      switch5.y = (this.game.height/4)*3;
 
       var wp1 = new WayPoint(this.game, 
-          (this.game.width/8 * 3), (this.game.height/2));
-      wp1.wireTo(switch4);
+          (this.game.width/5)*2, (this.game.height/5));
+    //  wp1.wireTo(switch4);
 
-   /*   var wp2 = new WayPoint(this.game,
-          (this.game.width/4 * 3), (this.game.height/4) * 3);
-      wp2.wireTo(this.destination);
+      var wp2 = new WayPoint(this.game,
+          (this.game.width/4 )*3, (this.game.height/2));
+    /*  wp2.wireTo(this.destination);
 */
 
     /*  this.switch.wireTo('A', switch3, 0);
@@ -582,21 +690,21 @@ module.exports = Menu;
       switch1.wireTo('B', switch4, 0);
       switch3.wireTo('A', switch2, 0);
       switch3.wireTo('B', switch5,0 );
-      switch2.wireTo('A', this.destination,0);
-      switch2.wireTo('B', wp1,0);
+      switch2.wireTo('A', this.destination,0, wp2);
+      switch2.wireTo('B', switch4,0, wp1);
       switch4.wireTo('A', this.destination, [this.enemies[1]]);
       switch4.wireTo('B', switch3,0);
       switch5.wireTo('A', this.destination,0 );
       switch5.wireTo('B', switch2, [this.enemies[2]])
       this.head.wireToSwitch(switch1, [this.enemies[0]]);
 
-      this.game.add.existing(this.head);
+ /*     this.game.add.existing(this.head);
       this.game.add.existing(switch1);
       this.game.add.existing(switch2);
       this.game.add.existing(switch3);
       this.game.add.existing(switch4);
       this.game.add.existing(switch5);
-      this.game.add.existing(this.destination);
+      this.game.add.existing(this.destination);*/
     },
     update: function() {
          var x = this.targetFears;
@@ -638,6 +746,18 @@ Preload.prototype = {
     this.load.onLoadComplete.addOnce(this.onLoadComplete, this);
     this.load.setPreloadSprite(this.asset);
 
+    this.load.image('background', 'assets/background.png');
+    this.load.image('mastersynapse', 'assets/mastersynapse.png');
+    this.load.image('switchsynapse', 'assets/switchsynapse.png');
+    this.load.spritesheet('synapseidentifiers', 'assets/synapseidentifiers.png', 13,13);
+    this.load.image('wireanchor', 'assets/wireanchor.png');
+    this.load.spritesheet('segment', 'assets/segment.png',32,32);
+
+
+  //  this.load.image('mastersynapse', 'assets/mastersynapse.png');
+
+
+    // old sprites
     this.load.spritesheet('wire', 'assets/wire.png', 32, 32);
     this.load.spritesheet('start', 'assets/start.png', 32, 32);
     this.load.spritesheet('rand', 'assets/rand.png', 153, 153);
@@ -653,7 +773,7 @@ Preload.prototype = {
   },
   update: function() {
     if(!!this.ready) {
-      this.game.state.start('menu');
+      this.game.state.start('play');
     }
   },
   onLoadComplete: function() {
