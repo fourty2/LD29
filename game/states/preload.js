@@ -23,6 +23,7 @@ Preload.prototype = {
     this.load.spritesheet('synapseidentifiers', 'assets/synapseidentifiers.png', 13,13);
     this.load.image('wireanchor', 'assets/wireanchor.png');
     this.load.spritesheet('segment', 'assets/segment.png',32,32);
+    this.load.spritesheet('spider', 'assets/spideranim.png',51,29);
 
 
   //  this.load.image('mastersynapse', 'assets/mastersynapse.png');

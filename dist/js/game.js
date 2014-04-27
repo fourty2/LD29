@@ -62,9 +62,17 @@ module.exports = Destination;
 'use strict';
 
 var Enemy = function(game, x, y, frame) {
-  Phaser.Sprite.call(this, game, 0, 0, 'flower', frame);
+  Phaser.Sprite.call(this, game, 0, 0, 'spider', frame);
+  this.scale.x = 2;
+  this.scale.y = 2;
   this.anchor.setTo(0.5,0.5);
   this.bringToTop();
+
+	this.animations.add('stand', [0]);
+	this.animations.add('walk', [1,2,3,4,5,6]);
+
+	this.animations.play('walk', 10, true);
+
   // initialize your prefab here
   
 };
@@ -797,6 +805,7 @@ Preload.prototype = {
     this.load.spritesheet('synapseidentifiers', 'assets/synapseidentifiers.png', 13,13);
     this.load.image('wireanchor', 'assets/wireanchor.png');
     this.load.spritesheet('segment', 'assets/segment.png',32,32);
+    this.load.spritesheet('spider', 'assets/spideranim.png',51,29);
 
 
   //  this.load.image('mastersynapse', 'assets/mastersynapse.png');
