@@ -822,7 +822,7 @@ Menu.prototype = {
 
     this.instructionGroup.visible = false;
     this.game.add.tween(this.title).to({y:130}, 2000, Phaser.Easing.Bounce.Out, true);
-
+    this.game.add.audio('music').play('', 0, 0.2, true);
 /*    this.sprite.angle = -20;
     this.game.add.tween(this.sprite).to({angle: 20}, 1000, Phaser.Easing.Linear.NONE, true, 0, 1000, true);
     */
@@ -1082,6 +1082,7 @@ Preload.prototype = {
     this.load.audio('explosionSound', 'assets/expl.mp3');
     this.load.audio('switchSound', 'assets/switch.mp3');
     this.load.audio('wireSound', 'assets/wire.mp3');
+    this.load.audio('music', 'assets/music.mp3');
   },
   create: function() {
     this.asset.cropEnabled = false;

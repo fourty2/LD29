@@ -33,6 +33,7 @@ Preload.prototype = {
     this.load.audio('explosionSound', 'assets/expl.mp3');
     this.load.audio('switchSound', 'assets/switch.mp3');
     this.load.audio('wireSound', 'assets/wire.mp3');
+    this.load.audio('music', 'assets/music.mp3');
   },
   create: function() {
     this.asset.cropEnabled = false;

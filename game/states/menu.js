@@ -54,7 +54,7 @@ Menu.prototype = {
 
     this.instructionGroup.visible = false;
     this.game.add.tween(this.title).to({y:130}, 2000, Phaser.Easing.Bounce.Out, true);
-
+    this.game.add.audio('music').play('', 0, 0.2, true);
 /*    this.sprite.angle = -20;
     this.game.add.tween(this.sprite).to({angle: 20}, 1000, Phaser.Easing.Linear.NONE, true, 0, 1000, true);
     */
