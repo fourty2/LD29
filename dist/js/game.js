@@ -16,7 +16,7 @@ window.onload = function () {
 
   game.state.start('boot');
 };
-},{"./states/boot":9,"./states/gameover":10,"./states/menu":11,"./states/play":12,"./states/play2":13,"./states/preload":14}],2:[function(require,module,exports){
+},{"./states/boot":10,"./states/gameover":11,"./states/menu":12,"./states/play":13,"./states/play2":14,"./states/preload":15}],2:[function(require,module,exports){
 'use strict';
 
 var Destination = function(game, parent) {
@@ -67,6 +67,7 @@ var Enemy = function(game, x, y, frame) {
   this.scale.y = 2;
   this.anchor.setTo(0.5,0.5);
   this.bringToTop();
+  this.alive = true;
 
 	this.animations.add('stand', [0]);
 	this.animations.add('walk', [1,2,3,4,5,6]);
@@ -87,7 +88,9 @@ Enemy.prototype.update = function() {
 };
 
 Enemy.prototype.hit = function() {
+
 	this.destroy();
+	this.alive = false;
 }
 
 module.exports = Enemy;
@@ -149,7 +152,122 @@ Head.prototype.tweenOver = function() {
 
 module.exports = Head;
 
-},{"../prefabs/wire":8}],5:[function(require,module,exports){
+},{"../prefabs/wire":9}],5:[function(require,module,exports){
+'use strict';
+
+var Missile = function(game, x, y, frame) {
+  Phaser.Sprite.call(this, game, x, y, 'missile', frame);
+
+  this.anchor.setTo(0.5,0.5);
+ // this.scale.x = 2;
+ // this.scale.y = 2;
+
+    game.physics.enable(this, Phaser.Physics.ARCADE);
+    this.SPEED = 350; // missile speed pixels/second
+    this.TURN_RATE = 5; // turn rate in degrees/frame
+    this.WOBBLE_LIMIT = 15; // degrees
+    this.WOBBLE_SPEED = 250; // milliseconds
+    this.SMOKE_LIFETIME = 500; // milliseconds
+    this.AVOID_DISTANCE = 30; // pixels
+
+	this.wobble = this.WOBBLE_LIMIT;
+    this.game.add.tween(this)
+        .to(
+            { wobble: -this.WOBBLE_LIMIT },
+            this.WOBBLE_SPEED, Phaser.Easing.Sinusoidal.InOut, true, 0,
+            Number.POSITIVE_INFINITY, true
+	        );
+
+	 this.smokeEmitter = this.game.add.emitter(0, 0, 100);
+
+	    // Set motion parameters for the emitted particles
+	    this.smokeEmitter.gravity = 0;
+	    this.smokeEmitter.setXSpeed(0, 0);
+	    this.smokeEmitter.setYSpeed(-80, -50); // make smoke drift upwards
+
+	    // Make particles fade out after 1000ms
+	 //   this.smokeEmitter.setAlpha(1, 0, this.SMOKE_LIFETIME,
+	   //     Phaser.Easing.Linear.InOut);
+
+	    // Create the actual particles
+	    this.smokeEmitter.makeParticles('smoke');
+
+	    // Start emitting smoke particles one at a time (explode=false) with a
+	    // lifespan of this.SMOKE_LIFETIME at 50ms intervals
+	    this.smokeEmitter.start(false, this.SMOKE_LIFETIME, 50);
+
+	    // Create a point object to hold the position of the smoke emitter relative
+	    // to the center of the missile. See update() below.
+	    this.smokePosition = new Phaser.Point(this.width/2, 0);
+};
+
+Missile.prototype = Object.create(Phaser.Sprite.prototype);
+Missile.prototype.constructor = Missile;
+Missile.prototype.setDestination = function(enemy) {
+	this.destination = enemy;
+}
+
+
+Missile.prototype.update = function() {
+	//console.log("hui");
+  if (!this.alive || !this.destination) {
+        this.smokeEmitter.on = false;
+        return;
+    } else {
+        this.smokeEmitter.on = true;
+    }
+ var p = this.smokePosition.rotate(0, 0, this.rotation);
+
+    // Position the smoke emitter at the new coordinates relative to the center
+    // of the missile
+    this.smokeEmitter.x = this.x - p.x;
+    this.smokeEmitter.y = this.y - p.y;
+
+    // Calculate the angle from the missile to the mouse cursor game.input.x
+    // and game.input.y are the mouse position; substitute with whatever
+    // target coordinates you need.
+   // console.log(this.game.input.activePointer.x);
+    var targetAngle = this.game.math.angleBetween(
+        this.x, this.y,
+        this.destination.x, this.destination.y
+    );
+
+    // Add our "wobble" factor to the targetAngle to make the missile wobble
+    // Remember that this.wobble is tweening (above)
+    targetAngle += this.game.math.degToRad(this.wobble);
+
+ // Gradually (this.TURN_RATE) aim the missile towards the target angle
+    if (this.rotation !== targetAngle) {
+        // Calculate difference between the current angle and targetAngle
+        var delta = targetAngle - this.rotation;
+
+        // Keep it in range from -180 to 180 to make the most efficient turns.
+        if (delta > Math.PI) delta -= Math.PI * 2;
+        if (delta < -Math.PI) delta += Math.PI * 2;
+
+        if (delta > 0) {
+            // Turn clockwise
+            this.angle += this.TURN_RATE;
+        } else {
+            // Turn counter-clockwise
+            this.angle -= this.TURN_RATE;
+        }
+
+        // Just set angle to target angle if they are close
+        if (Math.abs(delta) < this.game.math.degToRad(this.TURN_RATE)) {
+            this.rotation = targetAngle;
+        }
+    }
+
+    // Calculate velocity vector based on this.rotation and this.SPEED
+    this.body.velocity.x = Math.sin(this.rotation) * this.SPEED;
+    this.body.velocity.y = Math.cos(this.rotation) * this.SPEED;
+
+};
+
+module.exports = Missile;
+
+},{}],6:[function(require,module,exports){
 'use strict';
 
 var Segment = function(game, x, y, frame) {
@@ -178,7 +296,8 @@ Segment.prototype.fire = function() {
     this.hasEnemy.hit();
     this.hasEnemy = false;
   }
-	this.animations.play('firetrail', 30, false);
+  this.parent.setCurrentSegment(this);
+	this.animations.play('firetrail', 20, false);
 }
 
 Segment.prototype.fireNextSegment = function() {
@@ -207,7 +326,7 @@ Segment.prototype.update = function() {
 
 module.exports = Segment;
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 'use strict';
 var Wire = require('../prefabs/wire');
 var Switch = function(game, parent) {
@@ -294,7 +413,7 @@ Switch.prototype.setInputSegment = function(segment) {
 
 module.exports = Switch;
 
-},{"../prefabs/wire":8}],7:[function(require,module,exports){
+},{"../prefabs/wire":9}],8:[function(require,module,exports){
 'use strict';
 var Wire = require('../prefabs/wire');
 var Waypoint = function(game, x, y) {
@@ -328,16 +447,21 @@ Waypoint.prototype.setInputSegment = function(segment) {
 
 module.exports = Waypoint;
 
-},{"../prefabs/wire":8}],8:[function(require,module,exports){
+},{"../prefabs/wire":9}],9:[function(require,module,exports){
 'use strict';
 
 var Segment = require('../prefabs/segment');
+var Missile = require('../prefabs/missile');
+
 var Wire = function(game, parent, sourceX, sourceY, destObj, enemies, waypoint) {
     Phaser.Group.call(this, game, parent);
     this.enemies = enemies;
     this.waypoint = waypoint;
+    this.MAX_MISSILES = 1;
     this.create(sourceX, sourceY, destObj);
+    this.shoot = false;
     this.spawnEnemies(); 
+
 };
 
 Wire.prototype = Object.create(Phaser.Group.prototype);
@@ -408,7 +532,14 @@ Wire.prototype.create = function(sourceX, sourceY, destObj) {
 	  destObj.setInputSegment(segment);
 	  segment.setFullCallback(this.handleFullWire, this);
 
-	  
+	  // missiles
+
+	      // Create a group to hold the missile
+    this.missileGroup = this.game.add.group();
+
+    // Create a group for explosions
+    this.explosionGroup = this.game.add.group();
+
 
 
 };
@@ -428,22 +559,120 @@ Wire.prototype.spawnEnemies = function() {
 
 
 Wire.prototype.fire = function() {
+	this.shoot = true;
 	this.segments[0].fire();
+}
+
+Wire.prototype.setCurrentSegment = function(segment) {
+	this.currentSegment = segment;
+	if (this.enemies && this.enemies[0].alive && this.shoot == true) {
+	    if (this.missileGroup.countLiving() < this.MAX_MISSILES) {
+        // Set the launch point to a random location below the bottom edge
+        // of the stage
+        var x = this.currentSegment.x;
+        var y = this.currentSegment.y;
+
+        this.launchMissile(this.game.rnd.integerInRange(x-20, x+20),
+          this.game.rnd.integerInRange(y-20, y+20), this.enemies[0]);
+  	  }
+  	 }
 }
 
 Wire.prototype.handleFullWire = function(scope) {
 	scope.destObj.wireLanded();
 }
 
+Wire.prototype.launchMissile = function(x, y, destination) {
+	console.log("launchMissile");
+    // // Get the first dead missile from the missileGroup
+    var missile = this.missileGroup.getFirstDead();
+
+    // If there aren't any available, create a new one
+    if (missile === null) {
+        missile = new Missile(this.game);
+         
+        this.missileGroup.add(missile);
+    }
+	missile.setDestination(destination);
+    // Revive the missile (set it's alive property to true)
+    // You can also define a onRevived event handler in your explosion objects
+    // to do stuff when they are revived.
+    missile.revive();
+
+    // Move the missile to the given coordinates
+    missile.x = x;
+    missile.y = y;
+
+    return missile;
+};
+
+Wire.prototype.getExplosion = function(x, y) {
+    // Get the first dead explosion from the explosionGroup
+    var explosion = this.explosionGroup.getFirstDead();
+
+    // If there aren't any available, create a new one
+    if (explosion === null) {
+        explosion = this.game.add.sprite(0, 0, 'explosion');
+        explosion.scale.x = 3;
+        explosion.scale.y = 3;
+        explosion.anchor.setTo(0.5, 0.5);
+
+        // Add an animation for the explosion that kills the sprite when the
+        // animation is complete
+        var animation = explosion.animations.add('boom', [0,1,2,3,4,5,6,7,8,9,10], 30, false);
+        animation.killOnComplete = true;
+
+        // Add the explosion sprite to the group
+        this.explosionGroup.add(explosion);
+    }
+
+    // Revive the explosion (set it's alive property to true)
+    // You can also define a onRevived event handler in your explosion objects
+    // to do stuff when they are revived.
+    explosion.revive();
+
+    // Move the explosion to the given coordinates
+    explosion.x = x;
+    explosion.y = y;
+
+    // Set rotation of the explosion at random for a little variety
+    explosion.angle = this.game.rnd.integerInRange(0, 360);
+
+    // Play the animation
+    explosion.animations.play('boom');
+
+    // Return the explosion itself in case we want to do anything else with it
+    return explosion;
+};
+
 Wire.prototype.update = function() {
   
+	if (this.enemies && this.enemies[0].alive && this.shoot == true) {
+
+  	   this.missileGroup.forEachAlive(function(m) {
+	        var distance = this.game.math.distance(m.x, m.y,
+	            this.enemies[0].x, this.enemies[0].y);	//should iterate through all enemies
+	        if (distance < 10) {
+	            m.kill();
+	            this.getExplosion(m.x, m.y);
+	        }
+  		  }, this);
+
+	} else {
+		 this.missileGroup.forEachAlive(function(m) {
+	            m.kill();
+	            this.getExplosion(m.x, m.y);
+	       
+  		  }, this);
+	}
+
   // write your prefab's specific update code here
   
 };
 
 module.exports = Wire;
 
-},{"../prefabs/segment":5}],9:[function(require,module,exports){
+},{"../prefabs/missile":5,"../prefabs/segment":6}],10:[function(require,module,exports){
 
 'use strict';
 
@@ -472,7 +701,7 @@ canvas.getContext('2d').imageSmoothingEnabled = false;
 
 module.exports = Boot;
 
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 
 'use strict';
 function GameOver() {}
@@ -500,7 +729,7 @@ GameOver.prototype = {
 };
 module.exports = GameOver;
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 
 'use strict';
 function Menu() {}
@@ -579,7 +808,7 @@ Menu.prototype = {
 
 module.exports = Menu;
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 
   'use strict';
   var Head = require('../prefabs/head');
@@ -587,6 +816,7 @@ module.exports = Menu;
  var WayPoint = require('../prefabs/waypoint');
  var Destination = require('../prefabs/destination');
  var Enemy = require('../prefabs/enemy');
+ var Missile = require('../prefabs/missile');
  
   
   function Play() {}
@@ -640,7 +870,8 @@ module.exports = Menu;
     //  this.game.add.existing(this.switch);
      // this.game.add.existing(this.destination);
 
-
+       
+     
     },
     update: function() {
  
@@ -660,7 +891,7 @@ module.exports = Menu;
   };
   
   module.exports = Play;
-},{"../prefabs/destination":2,"../prefabs/enemy":3,"../prefabs/head":4,"../prefabs/switch":6,"../prefabs/waypoint":7}],13:[function(require,module,exports){
+},{"../prefabs/destination":2,"../prefabs/enemy":3,"../prefabs/head":4,"../prefabs/missile":5,"../prefabs/switch":7,"../prefabs/waypoint":8}],14:[function(require,module,exports){
 'use strict';
   var Head = require('../prefabs/head');
   var Switch = require('../prefabs/switch');
@@ -779,7 +1010,7 @@ module.exports = Menu;
   };
 module.exports = Play2;
 
-},{"../prefabs/destination":2,"../prefabs/enemy":3,"../prefabs/head":4,"../prefabs/switch":6,"../prefabs/waypoint":7}],14:[function(require,module,exports){
+},{"../prefabs/destination":2,"../prefabs/enemy":3,"../prefabs/head":4,"../prefabs/switch":7,"../prefabs/waypoint":8}],15:[function(require,module,exports){
 
 'use strict';
 function Preload() {
@@ -804,8 +1035,12 @@ Preload.prototype = {
     this.load.image('switchsynapse', 'assets/switchsynapse.png');
     this.load.spritesheet('synapseidentifiers', 'assets/synapseidentifiers.png', 13,13);
     this.load.image('wireanchor', 'assets/wireanchor.png');
+    this.load.image('missile', 'assets/missile.png');
     this.load.spritesheet('segment', 'assets/segment.png',32,32);
     this.load.spritesheet('spider', 'assets/spideranim.png',51,29);
+    this.load.image('smoke', 'assets/smoke.png');
+
+    this.load.spritesheet('explosion', 'assets/explosion.png',40,40);
 
 
   //  this.load.image('mastersynapse', 'assets/mastersynapse.png');
@@ -827,7 +1062,7 @@ Preload.prototype = {
   },
   update: function() {
     if(!!this.ready) {
-      this.game.state.start('menu');
+      this.game.state.start('play');
     }
   },
   onLoadComplete: function() {

@@ -6,6 +6,7 @@ var Enemy = function(game, x, y, frame) {
   this.scale.y = 2;
   this.anchor.setTo(0.5,0.5);
   this.bringToTop();
+  this.alive = true;
 
 	this.animations.add('stand', [0]);
 	this.animations.add('walk', [1,2,3,4,5,6]);
@@ -26,7 +27,9 @@ Enemy.prototype.update = function() {
 };
 
 Enemy.prototype.hit = function() {
+
 	this.destroy();
+	this.alive = false;
 }
 
 module.exports = Enemy;

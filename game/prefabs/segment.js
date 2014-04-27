@@ -26,7 +26,8 @@ Segment.prototype.fire = function() {
     this.hasEnemy.hit();
     this.hasEnemy = false;
   }
-	this.animations.play('firetrail', 30, false);
+  this.parent.setCurrentSegment(this);
+	this.animations.play('firetrail', 20, false);
 }
 
 Segment.prototype.fireNextSegment = function() {

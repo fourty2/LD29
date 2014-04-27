@@ -5,6 +5,7 @@
  var WayPoint = require('../prefabs/waypoint');
  var Destination = require('../prefabs/destination');
  var Enemy = require('../prefabs/enemy');
+ var Missile = require('../prefabs/missile');
  
   
   function Play() {}
@@ -58,7 +59,8 @@
     //  this.game.add.existing(this.switch);
      // this.game.add.existing(this.destination);
 
-
+       
+     
     },
     update: function() {
  

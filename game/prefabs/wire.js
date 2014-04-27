@@ -1,12 +1,17 @@
 'use strict';
 
 var Segment = require('../prefabs/segment');
+var Missile = require('../prefabs/missile');
+
 var Wire = function(game, parent, sourceX, sourceY, destObj, enemies, waypoint) {
     Phaser.Group.call(this, game, parent);
     this.enemies = enemies;
     this.waypoint = waypoint;
+    this.MAX_MISSILES = 1;
     this.create(sourceX, sourceY, destObj);
+    this.shoot = false;
     this.spawnEnemies(); 
+
 };
 
 Wire.prototype = Object.create(Phaser.Group.prototype);
@@ -77,7 +82,14 @@ Wire.prototype.create = function(sourceX, sourceY, destObj) {
 	  destObj.setInputSegment(segment);
 	  segment.setFullCallback(this.handleFullWire, this);
 
-	  
+	  // missiles
+
+	      // Create a group to hold the missile
+    this.missileGroup = this.game.add.group();
+
+    // Create a group for explosions
+    this.explosionGroup = this.game.add.group();
+
 
 
 };
@@ -97,15 +109,113 @@ Wire.prototype.spawnEnemies = function() {
 
 
 Wire.prototype.fire = function() {
+	this.shoot = true;
 	this.segments[0].fire();
+}
+
+Wire.prototype.setCurrentSegment = function(segment) {
+	this.currentSegment = segment;
+	if (this.enemies && this.enemies[0].alive && this.shoot == true) {
+	    if (this.missileGroup.countLiving() < this.MAX_MISSILES) {
+        // Set the launch point to a random location below the bottom edge
+        // of the stage
+        var x = this.currentSegment.x;
+        var y = this.currentSegment.y;
+
+        this.launchMissile(this.game.rnd.integerInRange(x-20, x+20),
+          this.game.rnd.integerInRange(y-20, y+20), this.enemies[0]);
+  	  }
+  	 }
 }
 
 Wire.prototype.handleFullWire = function(scope) {
 	scope.destObj.wireLanded();
 }
 
+Wire.prototype.launchMissile = function(x, y, destination) {
+	console.log("launchMissile");
+    // // Get the first dead missile from the missileGroup
+    var missile = this.missileGroup.getFirstDead();
+
+    // If there aren't any available, create a new one
+    if (missile === null) {
+        missile = new Missile(this.game);
+         
+        this.missileGroup.add(missile);
+    }
+	missile.setDestination(destination);
+    // Revive the missile (set it's alive property to true)
+    // You can also define a onRevived event handler in your explosion objects
+    // to do stuff when they are revived.
+    missile.revive();
+
+    // Move the missile to the given coordinates
+    missile.x = x;
+    missile.y = y;
+
+    return missile;
+};
+
+Wire.prototype.getExplosion = function(x, y) {
+    // Get the first dead explosion from the explosionGroup
+    var explosion = this.explosionGroup.getFirstDead();
+
+    // If there aren't any available, create a new one
+    if (explosion === null) {
+        explosion = this.game.add.sprite(0, 0, 'explosion');
+        explosion.scale.x = 3;
+        explosion.scale.y = 3;
+        explosion.anchor.setTo(0.5, 0.5);
+
+        // Add an animation for the explosion that kills the sprite when the
+        // animation is complete
+        var animation = explosion.animations.add('boom', [0,1,2,3,4,5,6,7,8,9,10], 30, false);
+        animation.killOnComplete = true;
+
+        // Add the explosion sprite to the group
+        this.explosionGroup.add(explosion);
+    }
+
+    // Revive the explosion (set it's alive property to true)
+    // You can also define a onRevived event handler in your explosion objects
+    // to do stuff when they are revived.
+    explosion.revive();
+
+    // Move the explosion to the given coordinates
+    explosion.x = x;
+    explosion.y = y;
+
+    // Set rotation of the explosion at random for a little variety
+    explosion.angle = this.game.rnd.integerInRange(0, 360);
+
+    // Play the animation
+    explosion.animations.play('boom');
+
+    // Return the explosion itself in case we want to do anything else with it
+    return explosion;
+};
+
 Wire.prototype.update = function() {
   
+	if (this.enemies && this.enemies[0].alive && this.shoot == true) {
+
+  	   this.missileGroup.forEachAlive(function(m) {
+	        var distance = this.game.math.distance(m.x, m.y,
+	            this.enemies[0].x, this.enemies[0].y);	//should iterate through all enemies
+	        if (distance < 10) {
+	            m.kill();
+	            this.getExplosion(m.x, m.y);
+	        }
+  		  }, this);
+
+	} else {
+		 this.missileGroup.forEachAlive(function(m) {
+	            m.kill();
+	            this.getExplosion(m.x, m.y);
+	       
+  		  }, this);
+	}
+
   // write your prefab's specific update code here
   
 };
