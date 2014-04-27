@@ -507,17 +507,22 @@ Menu.prototype = {
     this.background = this.game.add.sprite(0,0,'background');
       this.background.scale.x = 2;
       this.background.scale.y = 2;
-      
-    this.titleText = this.game.add.text(this.game.world.centerX, 120, 'FearWire', style);
-    this.titleText.anchor.setTo(0.5, 0.5);
-    this.game.add.text(170,200,'* send an impulse by clicking on the head (left) (lvl2: top)', { font: '16px Arial', fill: '#ffffff', align: 'center'});
-    this.game.add.text(170,220,'* toggle switches (should show the direction later)', { font: '16px Arial', fill: '#ffffff', align: 'center'});
-    this.game.add.text(170,240,'* kill all flowers', { font: '16px Arial', fill: '#ffffff', align: 'center'});
-    this.game.add.text(170,260,'* (lvl2) you can toggle the switch while the impulse is traveling', { font: '16px Arial', fill: '#ffffff', align: 'center'});
-    this.game.add.text(60,150,'story: you are a doctor who can destroy somebodies fears by rewiring his/hers brain (inception like)',  { font: '16px Arial', fill: '#ffffff', align: 'center'})
+
+    this.title = this.game.add.sprite(0,0,'title');
+    this.title.anchor.setTo(0.5,0.5);
+    this.title.x = this.game.width/2;
+    this.title.y = -100;
+    this.title.scale.x = 2;
+    this.title.scale.y = 2;
+    this.game.add.text(170,300,'* send an impulse by clicking on the head (left) (lvl2: top)', { font: '16px Arial', fill: '#ffffff', align: 'center'});
+    this.game.add.text(170,320,'* toggle switches (should show the direction later)', { font: '16px Arial', fill: '#ffffff', align: 'center'});
+    this.game.add.text(170,340,'* kill all flowers', { font: '16px Arial', fill: '#ffffff', align: 'center'});
+    this.game.add.text(170,360,'* (lvl2) you can toggle the switch while the impulse is traveling', { font: '16px Arial', fill: '#ffffff', align: 'center'});
+    this.game.add.text(60,250,'story: you are a doctor who can destroy somebodies fears by rewiring his/hers brain (inception like)',  { font: '16px Arial', fill: '#ffffff', align: 'center'})
     this.instructionsText = this.game.add.text(this.game.world.centerX, 400, 'Click anywhere to play', { font: '16px Arial', fill: '#ffffff', align: 'center'});
     this.instructionsText.anchor.setTo(0.5, 0.5);
 
+    this.game.add.tween(this.title).to({y:130}, 2000, Phaser.Easing.Bounce.Out, true);
 
 /*    this.sprite.angle = -20;
     this.game.add.tween(this.sprite).to({angle: 20}, 1000, Phaser.Easing.Linear.NONE, true, 0, 1000, true);
@@ -749,6 +754,7 @@ Preload.prototype = {
     this.load.setPreloadSprite(this.asset);
 
     this.load.image('background', 'assets/background.png');
+    this.load.image('title', 'assets/title.png');
     this.load.image('mastersynapse', 'assets/mastersynapse.png');
     this.load.image('switchsynapse', 'assets/switchsynapse.png');
     this.load.spritesheet('synapseidentifiers', 'assets/synapseidentifiers.png', 13,13);

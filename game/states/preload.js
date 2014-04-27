@@ -14,6 +14,7 @@ Preload.prototype = {
     this.load.setPreloadSprite(this.asset);
 
     this.load.image('background', 'assets/background.png');
+    this.load.image('title', 'assets/title.png');
     this.load.image('mastersynapse', 'assets/mastersynapse.png');
     this.load.image('switchsynapse', 'assets/switchsynapse.png');
     this.load.spritesheet('synapseidentifiers', 'assets/synapseidentifiers.png', 13,13);
